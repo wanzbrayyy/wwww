@@ -1,0 +1,61 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Pembayaran</h2>
+                    <span>Selesaikan pembayaran deposit anda</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill"><div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div></div>
+            </div>
+        </header>
+
+        <div class="content-card" style="max-width: 600px; margin: 0 auto;">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-credit-card text-primary"></i> Konfirmasi Pembayaran</h3>
+            </div>
+            <div class="card-body text-center">
+                <div style="font-size: 16px; color: #94a3b8; margin-bottom: 10px;">ID Pesanan: <%= order_id %></div>
+                <div style="font-size: 32px; font-weight: bold; margin-bottom: 30px; color: #34d399;">Rp <%= amount.toLocaleString('id-ID') %></div>
+                
+                <button id="pay-button" class="btn-primary" style="padding: 15px 30px; font-size: 18px;">
+                    <i class="fa-solid fa-lock"></i> Bayar Sekarang
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Midtrans Snap JS -->
+<script src="https://app.midtrans.com/snap/snap.js" data-client-key="<%= clientKey %>"></script>
+<script type="text/javascript">
+    document.getElementById('pay-button').onclick = function(){
+        snap.pay('<%= snapToken %>', {
+            onSuccess: function(result){
+                window.location.href = "/deposit/history";
+            },
+            onPending: function(result){
+                window.location.href = "/deposit/history";
+            },
+            onError: function(result){
+                alert("Pembayaran gagal!");
+                window.location.href = "/deposit";
+            },
+            onClose: function(){
+                alert('Anda menutup popup tanpa menyelesaikan pembayaran');
+            }
+        });
+    };
+    
+    // Auto click agar user langsung melihat popup (opsional)
+    // document.getElementById('pay-button').click();
+</script>
+
+<%- include('../partials/footer') %>

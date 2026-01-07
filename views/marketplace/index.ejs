@@ -1,0 +1,79 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex; align-items:center;">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb">
+                    <h2>Marketplace</h2>
+                    <span>Jual beli produk digital terpercaya</span>
+                </div>
+            </div>
+            <div class="balance-card">
+                Rp <%= user.balance.toLocaleString('id-ID') %>
+            </div>
+        </header>
+
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <% if(user.role === 'seller' || user.role === 'admin') { %>
+                <a href="/marketplace/add" class="btn-primary" style="width:auto; display:inline-block; padding: 10px 20px;">
+                    <i class="fa-solid fa-plus-circle"></i> Jual Produk Baru
+                </a>
+            <% } %>
+            
+            <form action="/marketplace" method="GET" style="display:flex; gap:10px; flex:1; justify-content:flex-end;">
+                <input type="text" name="search" class="form-control" placeholder="Cari produk..." style="width:200px; margin:0;" value="<%= query.search || '' %>">
+                <select name="sort" class="form-control" style="width:150px; margin:0;" onchange="this.form.submit()">
+                    <option value="newest" <%= query.sort == 'newest' ? 'selected' : '' %>>Terbaru</option>
+                    <option value="bestseller" <%= query.sort == 'bestseller' ? 'selected' : '' %>>Terlaris</option>
+                    <option value="price_low" <%= query.sort == 'price_low' ? 'selected' : '' %>>Harga Terendah</option>
+                    <option value="price_high" <%= query.sort == 'price_high' ? 'selected' : '' %>>Harga Tertinggi</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="mp-grid">
+            <% if(products.length > 0) { %>
+                <% products.forEach(prod => { %>
+                    <div class="mp-card" style="cursor: pointer;" onclick="window.location.href='/marketplace/product/<%= prod.slug %>'">
+                        <div style="position: relative; overflow: hidden;">
+                            <img src="<%= prod.image %>" class="mp-img">
+                            <span class="badge bg-secondary" style="position: absolute; top: 10px; right: 10px; opacity: 0.9;">
+                                <%= prod.category.toUpperCase() %>
+                            </span>
+                        </div>
+                        <div class="mp-details">
+                            <div class="mp-title"><%= prod.name %></div>
+                            <span class="mp-price">Rp <%= prod.price.toLocaleString('id-ID') %></span>
+                            
+                            <div class="mp-seller" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--glass-border);">
+                                <div style="display:flex; align-items:center; gap:5px;">
+                                    <i class="fa-solid fa-store text-primary"></i> 
+                                    <span><%= prod.seller.username %></span>
+                                </div>
+                                <div style="margin-left:auto; display:flex; gap:10px;">
+                                    <span style="color:var(--text-muted); font-size:11px;">
+                                        <i class="fa-solid fa-bag-shopping"></i> <%= prod.sold %>
+                                    </span>
+                                    <span style="color:#fbbf24; font-size:11px;">
+                                        <i class="fa-solid fa-star"></i> <%= prod.averageRating.toFixed(1) %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div style="grid-column: 1/-1; text-align:center; padding:50px; color:var(--text-muted); background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
+                    <i class="fa-solid fa-box-open" style="font-size:40px; margin-bottom:15px; color: var(--neon-blue);"></i>
+                    <p>Belum ada produk yang tersedia saat ini.</p>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

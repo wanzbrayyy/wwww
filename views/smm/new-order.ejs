@@ -1,0 +1,168 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Pesan SMM</h2>
+                    <span>Buat pesanan social media baru</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill"><div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div></div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-wand-magic-sparkles text-primary"></i> Form Order</h3>
+            </div>
+            <div class="card-body">
+                <form action="/smm/order" method="POST">
+                    <div class="form-group">
+                        <label>Kategori Layanan</label>
+                        <select id="categorySelect" class="form-control" required>
+                            <option value="">-- Pilih Kategori --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pilih Layanan</label>
+                        <select id="serviceSelect" name="service_id" class="form-control" required disabled>
+                            <option value="">-- Pilih Layanan --</option>
+                        </select>
+                        <input type="hidden" name="service_name" id="serviceNameInput">
+                        <input type="hidden" name="service_price" id="servicePriceInput">
+                    </div>
+
+                    <!-- Note Box SMM -->
+                    <div class="alert alert-info" id="noteBox" style="display:none; margin: 15px 0; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                        <i class="fa-solid fa-circle-info"></i> <span id="noteText" style="font-size: 13px;"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1; margin-right:10px;">
+                            <label>Min</label>
+                            <input type="text" id="minAmount" class="form-control" readonly>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Max</label>
+                            <input type="text" id="maxAmount" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Target (Link/Username)</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-link"></i>
+                            <input type="text" name="target_link" class="form-control" placeholder="https://instagram.com/..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Jumlah Pesanan</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <input type="number" name="quantity" id="quantity" class="form-control" placeholder="Masukan jumlah" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total Harga</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-tag"></i>
+                            <input type="text" id="totalPrice" class="form-control" readonly value="Rp 0" style="font-weight: bold; color: #34d399;">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Kirim Pesanan</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const servicesData = <%- JSON.stringify(services) %>;
+    
+    const categorySelect = document.getElementById('categorySelect');
+    const serviceSelect = document.getElementById('serviceSelect');
+    const minAmount = document.getElementById('minAmount');
+    const maxAmount = document.getElementById('maxAmount');
+    const quantityInput = document.getElementById('quantity');
+    const totalPriceInput = document.getElementById('totalPrice');
+    const noteBox = document.getElementById('noteBox');
+    const noteText = document.getElementById('noteText');
+    const serviceNameInput = document.getElementById('serviceNameInput');
+    const servicePriceInput = document.getElementById('servicePriceInput');
+
+    const categories = [...new Set(servicesData.map(item => item.category))].sort();
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+    });
+
+    categorySelect.addEventListener('change', function() {
+        const selectedCat = this.value;
+        serviceSelect.innerHTML = '<option value="">-- Pilih Layanan --</option>';
+        serviceSelect.disabled = true;
+        resetFields();
+        
+        if (selectedCat) {
+            const filteredServices = servicesData.filter(item => item.category === selectedCat);
+            filteredServices.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id;
+                option.textContent = service.name;
+                option.dataset.min = service.min;
+                option.dataset.max = service.max;
+                option.dataset.price = service.price;
+                option.dataset.note = service.note;
+                option.dataset.name = service.name;
+                serviceSelect.appendChild(option);
+            });
+            serviceSelect.disabled = false;
+        }
+    });
+
+    serviceSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            minAmount.value = selectedOption.dataset.min;
+            maxAmount.value = selectedOption.dataset.max;
+            noteText.textContent = selectedOption.dataset.note;
+            noteBox.style.display = 'block';
+            serviceNameInput.value = selectedOption.dataset.name;
+            servicePriceInput.value = selectedOption.dataset.price;
+            calculateTotal();
+        } else {
+            resetFields();
+        }
+    });
+
+    quantityInput.addEventListener('input', calculateTotal);
+
+    function calculateTotal() {
+        const qty = parseFloat(quantityInput.value) || 0;
+        const price = parseFloat(servicePriceInput.value) || 0;
+        const total = (qty / 1000) * price;
+        totalPriceInput.value = "Rp " + Math.ceil(total).toLocaleString('id-ID');
+    }
+
+    function resetFields() {
+        minAmount.value = "";
+        maxAmount.value = "";
+        noteBox.style.display = 'none';
+        serviceNameInput.value = "";
+        servicePriceInput.value = "";
+        totalPriceInput.value = "Rp 0";
+    }
+</script>
+
+<%- include('../partials/footer') %>

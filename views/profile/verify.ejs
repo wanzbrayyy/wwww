@@ -1,0 +1,60 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Verifikasi Email</h2>
+                    <span>Amankan akun anda sekarang</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill">
+                    <i class="fa-solid fa-shield-halved"></i> Keamanan
+                </div>
+            </div>
+        </header>
+
+        <div class="content-card" style="max-width: 500px; margin: 0 auto;">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-envelope-open-text text-primary"></i> Masukkan Kode OTP</h3>
+            </div>
+            <div class="card-body text-center">
+                <div style="margin-bottom: 25px;">
+                    <i class="fa-solid fa-paper-plane" style="font-size: 48px; color: var(--neon-blue); margin-bottom: 15px;"></i>
+                    <p style="color: #cbd5e1; font-size: 14px;">
+                        Kami telah mengirimkan kode verifikasi 6 digit ke email: <br>
+                        <strong style="color: white;"><%= user.email %></strong>
+                    </p>
+                </div>
+
+                <form action="/profile/verify-check" method="POST">
+                    <div class="form-group">
+                        <input type="text" name="code" class="form-control" placeholder="X X X X X X" 
+                               style="text-align: center; font-size: 24px; letter-spacing: 5px; font-weight: bold; background: rgba(0,0,0,0.4);" 
+                               maxlength="6" required autocomplete="off">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" style="margin-top: 10px;">
+                        Verifikasi Akun
+                    </button>
+                </form>
+
+                <div style="margin-top: 20px; font-size: 13px;">
+                    <form action="/profile/verify-request" method="POST" style="display: inline;">
+                        <span style="color: #94a3b8;">Tidak menerima kode? </span>
+                        <button type="submit" style="background: none; border: none; color: var(--neon-blue); cursor: pointer; text-decoration: underline;">
+                            Kirim Ulang
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

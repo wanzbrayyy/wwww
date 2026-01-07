@@ -1,0 +1,39 @@
+<%- include('../../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../../partials/navbar') %>
+    <main class="main-content">
+        <div class="content-card" style="max-width:600px;">
+            <div class="card-header"><h3>Edit User: <%= targetUser.username %></h3></div>
+            <div class="card-body">
+                <form action="/admin/users/edit/<%= targetUser._id %>" method="POST">
+                    <div class="form-group">
+                        <label>Saldo</label>
+                        <input type="number" name="balance" class="form-control" value="<%= targetUser.balance %>">
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select name="role" class="form-control">
+                            <option value="member" <%= targetUser.role == 'member' ? 'selected' : '' %>>Member</option>
+                            <option value="seller" <%= targetUser.role == 'seller' ? 'selected' : '' %>>Seller</option>
+                            <option value="admin" <%= targetUser.role == 'admin' ? 'selected' : '' %>>Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ganti Password (Opsional)</label>
+                        <input type="text" name="password" class="form-control" placeholder="Isi jika ingin mereset password">
+                    </div>
+                    <div class="form-group">
+                        <label>Status Banned</label>
+                        <select name="isBanned" class="form-control">
+                            <option value="false" <%= targetUser.role !== 'banned' ? 'selected' : '' %>>Aktif</option>
+                            <option value="true" <%= targetUser.role === 'banned' ? 'selected' : '' %>>Banned</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary">Update User</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../../partials/footer') %>

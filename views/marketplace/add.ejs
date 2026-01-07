@@ -1,0 +1,196 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb"><h2>Jual Produk Digital</h2></div>
+            </div>
+        </header>
+
+        <div class="content-card" style="max-width:800px;">
+            <div class="card-body">
+                <form action="/marketplace/add" method="POST" enctype="multipart/form-data" id="productForm">
+                    <div class="form-group">
+                        <label>Nama Produk</label>
+                        <input type="text" name="name" class="form-control" required placeholder="Contoh: Script Premium">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Thumbnail / Cover</label>
+                        <input type="file" name="image" class="form-control" accept="image/*" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Harga (IDR)</label>
+                            <input type="number" name="price" class="form-control" required placeholder="50000">
+                        </div>
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select name="category" class="form-control">
+                                <option value="script">Script / Source Code</option>
+                                <option value="account">Akun Premium</option>
+                                <option value="tutorial">E-Course / Tutorial</option>
+                                <option value="tools">Software / Tools</option>
+                                <option value="design">Asset Design</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Deskripsi Produk</label>
+                        <textarea name="description" class="form-control" rows="5" required></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="background:rgba(59, 130, 246, 0.1); padding:20px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.3);">
+                        <label style="color:white; font-weight:600; font-size:16px; margin-bottom:15px; display:block;">Metode Pengiriman</label>
+                        
+                        <div style="display:flex; gap:20px; margin-bottom:15px;">
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                                <input type="radio" name="deliveryType" value="manual" checked onchange="toggleDelivery('manual')"> 
+                                Manual (Via Chat)
+                            </label>
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                                <input type="radio" name="deliveryType" value="auto" onchange="toggleDelivery('auto')"> 
+                                Otomatis (Instan)
+                            </label>
+                        </div>
+
+                        <div id="manualInfo" class="alert alert-info">
+                            <i class="fa-solid fa-info-circle"></i> File dikirim manual via Chat setelah dibeli.
+                        </div>
+
+                        <div id="autoSection" style="display:none;">
+                            <div class="form-group">
+                                <label>Konten Otomatis:</label>
+                                <select class="form-control" id="contentSource" onchange="toggleContentSource()">
+                                    <option value="text">Input Teks / URL Eksternal</option>
+                                    <option value="file">Upload File ke Server</option>
+                                </select>
+                            </div>
+
+                            <!-- Input untuk URL Akhir yang akan disimpan -->
+                            <div class="form-group">
+                                <label>Konten Final (Link / Teks)</label>
+                                <textarea name="deliveryContent" id="finalContent" class="form-control" rows="2" placeholder="Link atau data akun akan muncul di sini..." required></textarea>
+                            </div>
+
+                            <!-- Area Upload AJAX -->
+                            <div id="ajaxUploadDiv" class="form-group" style="display:none; border:1px dashed var(--glass-border); padding:15px; border-radius:8px;">
+                                <label>Upload File Produk (ZIP/RAR/PDF)</label>
+                                <input type="file" id="fileInput" class="form-control" accept=".zip,.rar,.pdf,.txt">
+                                
+                                <div id="progressContainer" style="display:none; margin-top:15px;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                                        <span id="uploadStatus">Uploading ke Catbox...</span>
+                                        <span id="uploadPercent">0%</span>
+                                    </div>
+                                    <div style="width:100%; background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
+                                        <div id="progressBar" style="width:0%; height:100%; background:#3b82f6; transition:width 0.2s;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" style="margin-top:10px;" id="submitBtn">
+                        <i class="fa-solid fa-paper-plane"></i> Posting Produk
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleDelivery(type) {
+        if (type === 'manual') {
+            document.getElementById('manualInfo').style.display = 'flex';
+            document.getElementById('autoSection').style.display = 'none';
+            document.getElementById('finalContent').required = false;
+        } else {
+            document.getElementById('manualInfo').style.display = 'none';
+            document.getElementById('autoSection').style.display = 'block';
+            document.getElementById('finalContent').required = true;
+        }
+    }
+
+    function toggleContentSource() {
+        const type = document.getElementById('contentSource').value;
+        const uploadDiv = document.getElementById('ajaxUploadDiv');
+        const finalContent = document.getElementById('finalContent');
+
+        if (type === 'file') {
+            uploadDiv.style.display = 'block';
+            finalContent.readOnly = true;
+            finalContent.placeholder = "URL File akan muncul otomatis setelah upload selesai...";
+        } else {
+            uploadDiv.style.display = 'none';
+            finalContent.readOnly = false;
+            finalContent.placeholder = "Masukkan Link Gdrive, Mega, atau detail akun...";
+            finalContent.value = "";
+        }
+    }
+
+    // AJAX Upload Logic
+    const fileInput = document.getElementById('fileInput');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadPercent = document.getElementById('uploadPercent');
+    const finalContent = document.getElementById('finalContent');
+    const submitBtn = document.getElementById('submitBtn');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length === 0) return;
+
+        const file = this.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        progressContainer.style.display = 'block';
+        submitBtn.disabled = true; // Cegah submit form saat upload berjalan
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menunggu Upload...';
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/marketplace/api/upload', true);
+
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percentComplete + '%';
+                uploadPercent.innerText = percentComplete + '%';
+            }
+        };
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    finalContent.value = response.url; // Masukkan URL Catbox ke input
+                    uploadStatus.innerHTML = '<span style="color:#34d399"><i class="fa-solid fa-check"></i> Upload Berhasil!</span>';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Posting Produk';
+                } else {
+                    uploadStatus.innerText = 'Upload Gagal!';
+                    submitBtn.disabled = false;
+                }
+            } else {
+                uploadStatus.innerText = 'Error pada server.';
+                submitBtn.disabled = false;
+            }
+        };
+
+        xhr.onerror = function() {
+            uploadStatus.innerText = 'Koneksi Gagal.';
+            submitBtn.disabled = false;
+        };
+
+        xhr.send(formData);
+    });
+</script>
+
+<%- include('../partials/footer') %>

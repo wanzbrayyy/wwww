@@ -1,0 +1,71 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <h2>Riwayat Pesanan</h2>
+                <p>History Transaksi SMM</p>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID Order</th>
+                            <th>Layanan</th>
+                            <th>Target</th>
+                            <th>Jumlah</th>
+                            <th>Start</th>
+                            <th>Remains</th>
+                            <th>Harga</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if(orders.length > 0) { %>
+                            <% orders.forEach(order => { %>
+                                <tr>
+                                    <td>#<%= order.order_id || order._id.toString().slice(-6) %></td>
+                                    <td><%= order.service_name %></td>
+                                    <td>
+                                        <div class="input-with-icon" style="max-width: 150px;">
+                                            <input type="text" class="form-control" style="font-size: 11px; height: 30px;" value="<%= order.target_link %>" readonly>
+                                        </div>
+                                    </td>
+                                    <td><%= order.quantity %></td>
+                                    <td><%= order.start_count %></td>
+                                    <td><%= order.remains %></td>
+                                    <td>Rp <%= order.price.toLocaleString('id-ID') %></td>
+                                    <td>
+                                        <% 
+                                            let badgeClass = 'bg-warning';
+                                            if(order.status === 'Success') badgeClass = 'bg-success';
+                                            if(order.status === 'Error' || order.status === 'Partial') badgeClass = 'bg-danger';
+                                            if(order.status === 'Processing') badgeClass = 'bg-info';
+                                        %>
+                                        <span class="badge <%= badgeClass %>">
+                                            <%= order.status %>
+                                        </span>
+                                    </td>
+                                    <td><%= new Date(order.createdAt).toLocaleDateString('id-ID') %></td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="9" class="text-center">Belum ada pesanan.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

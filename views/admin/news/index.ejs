@@ -1,0 +1,76 @@
+<%- include('../../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Kelola Berita</h2>
+                    <span>Panel Admin untuk informasi website</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill text-danger border-danger" style="background: rgba(239,68,68,0.1);">
+                    ADMIN MODE
+                </div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-newspaper text-primary"></i> Daftar Berita</h3>
+                <a href="/admin/news/add" class="btn-primary" style="width: auto; padding: 8px 20px;">
+                    <i class="fa-solid fa-plus"></i> Tambah Berita
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Judul</th>
+                                <th>Kategori</th>
+                                <th>Target</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if(newsList.length > 0) { %>
+                                <% newsList.forEach(news => { %>
+                                    <tr>
+                                        <td><%= new Date(news.createdAt).toLocaleDateString('id-ID') %></td>
+                                        <td><%= news.title %></td>
+                                        <td>
+                                            <% 
+                                                let badgeColor = 'bg-secondary';
+                                                if(news.category == 'info') badgeColor = 'bg-info';
+                                                if(news.category == 'maintenance') badgeColor = 'bg-danger';
+                                                if(news.category == 'promo') badgeColor = 'bg-warning';
+                                                if(news.category == 'service') badgeColor = 'bg-success';
+                                            %>
+                                            <span class="badge <%= badgeColor %>"><%= news.category.toUpperCase() %></span>
+                                        </td>
+                                        <td><%= news.type.toUpperCase() %></td>
+                                        <td>
+                                            <a href="/admin/news/delete/<%= news._id %>" class="badge bg-danger text-white" onclick="return confirm('Hapus berita ini?')">
+                                                <i class="fa-solid fa-trash"></i> Hapus
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr><td colspan="5" class="text-center p-4">Belum ada berita.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<%- include('../../partials/footer') %>

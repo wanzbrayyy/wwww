@@ -1,0 +1,68 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <h2>Riwayat PPOB</h2>
+                <p>Transaksi Pulsa & Tagihan</p>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID Trx</th>
+                            <th>Layanan</th>
+                            <th>No. Tujuan</th>
+                            <th>Harga</th>
+                            <th>SN / Keterangan</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if(orders.length > 0) { %>
+                            <% orders.forEach(order => { %>
+                                <tr>
+                                    <td>#<%= order.provider_id || order._id.toString().slice(-6) %></td>
+                                    <td><%= order.product_name %></td>
+                                    <td><%= order.target_number %></td>
+                                    <td>Rp <%= order.price.toLocaleString('id-ID') %></td>
+                                    <td>
+                                        <% if(order.sn) { %>
+                                            <code class="sn-code"><%= order.sn %></code>
+                                        <% } else { %>
+                                            -
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% 
+                                            let badgeClass = 'bg-warning';
+                                            if(order.status === 'Success') badgeClass = 'bg-success';
+                                            if(order.status === 'Error' || order.status === 'Failed') badgeClass = 'bg-danger';
+                                        %>
+                                        <span class="badge <%= badgeClass %>">
+                                            <%= order.status %>
+                                        </span>
+                                    </td>
+                                    <td><%= new Date(order.createdAt).toLocaleDateString('id-ID') %></td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7" class="text-center">Belum ada transaksi PPOB.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

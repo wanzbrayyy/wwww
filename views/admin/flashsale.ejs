@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <header class="top-header"><div class="breadcrumb"><h2>Atur Flash Sale</h2></div></header>
+        
+        <div class="content-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>Produk</th><th>Harga Asli</th><th>Harga Flash Sale</th><th>Durasi (Jam)</th><th>Aksi</th></tr></thead>
+                        <tbody>
+                            <% products.forEach(prod => { %>
+                                <tr>
+                                    <td><%= prod.name %></td>
+                                    <td><%= prod.price %></td>
+                                    <form action="/admin/flashsale/<%= prod._id %>" method="POST">
+                                        <td><input type="number" name="flashSalePrice" class="form-control" value="<%= prod.flashSalePrice || 0 %>"></td>
+                                        <td><input type="number" name="duration" class="form-control" value="24" style="width:70px;"></td>
+                                        <td><button class="badge bg-danger border-0">Set Sale</button></td>
+                                    </form>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../partials/footer') %>

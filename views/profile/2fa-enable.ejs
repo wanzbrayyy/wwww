@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <div class="content-card" style="max-width:500px; margin:0 auto; text-align:center;">
+            <div class="card-header"><h3>Aktifkan Google Auth</h3></div>
+            <div class="card-body">
+                <p>Scan QR Code ini di aplikasi Google Authenticator:</p>
+                <img src="<%= qrImage %>" style="border-radius:10px; margin:20px 0;">
+                <p style="font-family:monospace; color:var(--neon-blue);"><%= secret %></p>
+                
+                <form action="/profile/2fa/enable" method="POST">
+                    <input type="text" name="token" class="form-control" placeholder="Masukkan Kode Token" required style="text-align:center;">
+                    <button class="btn-primary" style="margin-top:10px;">Verifikasi & Aktifkan</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../partials/footer') %>

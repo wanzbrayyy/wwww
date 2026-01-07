@@ -1,0 +1,39 @@
+<%- include('../../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../../partials/navbar') %>
+    <main class="main-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h3>Kelola User</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Saldo</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(u => { %>
+                            <tr>
+                                <td><%= u.username %></td>
+                                <td><%= u.email %></td>
+                                <td><span class="badge bg-info"><%= u.role %></span></td>
+                                <td>Rp <%= u.balance.toLocaleString('id-ID') %></td>
+                                <td>
+                                    <a href="/admin/users/edit/<%= u._id %>" class="badge bg-warning text-dark">Edit/Ban</a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../../partials/footer') %>

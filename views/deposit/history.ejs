@@ -1,0 +1,85 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Riwayat Deposit</h2>
+                    <span>Catatan pengisian saldo</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill"><div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div></div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-list text-primary"></i> Data Deposit</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>ID Transaksi</th>
+                                <th>Metode</th>
+                                <th>Jumlah</th>
+                                <th>Status</th>
+                                <th>Opsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if(deposits.length > 0) { %>
+                                <% deposits.forEach(depo => { %>
+                                    <tr>
+                                        <td><%= new Date(depo.createdAt).toLocaleString('id-ID') %></td>
+                                        <td>#<%= depo.order_id %></td>
+                                        <td><%= depo.payment_type ? depo.payment_type.toUpperCase().replace('_', ' ') : '-' %></td>
+                                        <td>Rp <%= depo.amount.toLocaleString('id-ID') %></td>
+                                        <td>
+                                            <% 
+                                            let color = 'bg-warning text-dark';
+                                            if(depo.status === 'Success') color = 'bg-success text-white';
+                                            if(depo.status === 'Failed' || depo.status === 'Expired') color = 'bg-danger text-white';
+                                            %>
+                                            <span class="badge <%= color %>"><%= depo.status %></span>
+                                        </td>
+                                        <td>
+                                            <% if(depo.status === 'Pending') { %>
+                                                <button class="badge bg-info text-white border-0" onclick="payNow('<%= depo.snap_token %>')">Bayar</button>
+                                            <% } else { %>
+                                                -
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr><td colspan="6" class="text-center p-4">Belum ada riwayat deposit.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Script untuk tombol Bayar di history -->
+<script src="https://app.midtrans.com/snap/snap.js" data-client-key="Mid-client-IoIOg2RqJNZgKpY6"></script>
+<script>
+    function payNow(token) {
+        snap.pay(token, {
+            onSuccess: function(result){ window.location.reload(); },
+            onPending: function(result){ window.location.reload(); },
+            onError: function(result){ alert("Gagal"); }
+        });
+    }
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,186 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Dashboard</h2>
+                    <span>Halo, <%= user.fullname %></span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill"><%= user.rank %> Member</div>
+            </div>
+        </header>
+
+        <!-- Rank, Bonus & Referral -->
+        <div class="content-card" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
+            <div class="card-body">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <h3 style="margin:0; color:white;">Rank: <span style="color:#fbbf24"><%= user.rank %></span></h3>
+                        <small style="color:var(--text-muted)">Diskon Marketplace: <%= user.rank==='Gold'?'5%':(user.rank==='Silver'?'2%':'0%') %></small>
+                    </div>
+                    
+                    <!-- BUTTON CLAIM BONUS -->
+                    <div id="bonusSection">
+                        <% if(bonusTimeRemaining > 0) { %>
+                            <button class="btn-primary" style="background:var(--glass-border); color:var(--text-muted); cursor:not-allowed; width:auto; padding:8px 20px; font-size:12px;" disabled>
+                                <i class="fa-solid fa-clock"></i> <span id="countdownTimer">Loading...</span>
+                            </button>
+                        <% } else { %>
+                            <form action="/bonus/daily" method="POST">
+                                <button class="btn-primary" style="width:auto; padding:8px 20px; font-size:12px;">
+                                    <i class="fa-solid fa-gift"></i> Claim Bonus
+                                </button>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <% 
+                    let nextRank = 'Max';
+                    let target = 0;
+                    let progress = 100;
+                    if(user.rank === 'Bronze') { nextRank = 'Silver'; target = 1000000; progress = (user.totalDeposit/target)*100; }
+                    else if(user.rank === 'Silver') { nextRank = 'Gold'; target = 5000000; progress = (user.totalDeposit/target)*100; }
+                %>
+                
+                <% if(nextRank !== 'Max') { %>
+                    <div style="font-size:12px; margin-bottom:5px; color:#cbd5e1;">Progress ke <%= nextRank %>: Rp <%= user.totalDeposit.toLocaleString('id-ID') %> / <%= target.toLocaleString('id-ID') %></div>
+                    <div style="width:100%; background:rgba(255,255,255,0.1); height:8px; border-radius:4px;">
+                        <div style="width:<%= progress %>%; height:100%; background:#fbbf24; border-radius:4px;"></div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+                <div class="stat-info"><h4>Saldo</h4><h2>Rp <%= (user.balance || 0).toLocaleString('id-ID') %></h2></div>
+            </div>
+            
+            <!-- REFERRAL CARD -->
+            <div class="stat-card purple" style="display:block;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="stat-icon" style="width:35px; height:35px; font-size:18px;"><i class="fa-solid fa-share-nodes"></i></div>
+                        <h4 style="margin:0; font-size:12px; color:var(--text-muted);">Referral Code</h4>
+                    </div>
+                    <button onclick="copyReferral()" style="background:none; border:none; color:var(--neon-blue); cursor:pointer; font-size:12px;">
+                        <i class="fa-regular fa-copy"></i> Salin Link
+                    </button>
+                </div>
+                <h2 style="font-size:18px; margin-bottom:5px;"><%= user.referralCode %></h2>
+                <!-- Hidden Input for Copy -->
+                <input type="text" id="refLink" value="<%= `https://wanzofc-shop.com/auth/register?referral=${user.referralCode}` %>" style="position:absolute; left:-9999px;">
+            </div>
+
+            <div class="stat-card orange">
+                <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="stat-info"><h4>Komisi Ref</h4><h2>Rp <%= (user.referralEarnings || 0).toLocaleString('id-ID') %></h2></div>
+            </div>
+        </div>
+
+        <!-- REALTIME LEADERBOARD WIDGET -->
+        <div class="content-card">
+            <div class="card-header" style="justify-content:space-between;">
+                <h3><i class="fa-solid fa-trophy text-warning"></i> Top 5 Sultan</h3>
+                <a href="/bonus/leaderboard" style="font-size:12px; color:var(--neon-blue);">Lihat Semua</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>#</th><th>User</th><th>Rank</th><th>Total Saldo</th></tr></thead>
+                        <tbody>
+                            <% leaderboard.forEach((u, index) => { %>
+                                <tr>
+                                    <td>
+                                        <% if(index === 0) { %> 🥇 <% } else if(index === 1) { %> 🥈 <% } else if(index === 2) { %> 🥉 <% } else { %> <%= index + 1 %> <% } %>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <img src="<%= u.profile_pic %>" style="width:25px; height:25px; border-radius:50%;">
+                                            <%= u.username %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <% let badgeColor = u.rank === 'Gold' ? 'bg-warning text-dark' : (u.rank === 'Silver' ? 'bg-secondary text-white' : 'bg-info text-white'); %>
+                                        <span class="badge <%= badgeColor %>"><%= u.rank %></span>
+                                    </td>
+                                    <td style="font-family:monospace; color:#34d399;">Rp <%= u.balance.toLocaleString('id-ID') %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Widget -->
+        <div class="content-card" style="margin-top: 20px;">
+            <div class="card-header"><h3><i class="fa-solid fa-bullhorn text-info"></i> Info Terbaru</h3></div>
+            <div class="card-body p-0">
+                <% if(newsList.length > 0) { %>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <% newsList.forEach(news => { %>
+                            <a href="/news/<%= news.slug %>" style="display:block; padding:15px; border-bottom:1px solid var(--glass-border); transition:0.2s;" class="news-item-hover">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                    <span class="badge bg-secondary" style="font-size:10px;"><%= news.category.toUpperCase() %></span>
+                                    <span style="font-size:10px; color:var(--text-muted);"><%= new Date(news.createdAt).toLocaleDateString('id-ID') %></span>
+                                </div>
+                                <h4 style="font-size:14px; margin:0; color:white;"><%= news.title %></h4>
+                            </a>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div style="padding:20px; text-align:center; color:var(--text-muted);">Tidak ada info.</div>
+                <% } %>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    // TIMER SCRIPT
+    let remainingTime = <%= bonusTimeRemaining %>;
+    
+    if (remainingTime > 0) {
+        const timerElement = document.getElementById('countdownTimer');
+        
+        const updateTimer = () => {
+            if (remainingTime <= 0) {
+                window.location.reload();
+                return;
+            }
+            
+            const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+            
+            timerElement.innerText = `${hours}j ${minutes}m ${seconds}d`;
+            remainingTime -= 1000;
+        };
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    }
+
+    // COPY REFERRAL SCRIPT
+    function copyReferral() {
+        const copyText = document.getElementById("refLink");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            alert("Link Referral berhasil disalin!");
+        });
+    }
+</script>
+
+<%- include('../partials/footer') %>

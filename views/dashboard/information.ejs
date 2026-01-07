@@ -1,0 +1,88 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Pusat Informasi</h2>
+                    <span>Berita, Pembaruan & Promo Terbaru</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill">
+                    <i class="fa-solid fa-wallet"></i> Rp <%= (user.balance || 0).toLocaleString('id-ID') %>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-newspaper text-info"></i> Daftar Berita</h3>
+            </div>
+            <div class="card-body p-0">
+                <% if(newsList.length > 0) { %>
+                    <div class="news-list">
+                        <% newsList.forEach(news => { %>
+                            <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); transition: 0.3s; position: relative;" class="news-item-hover">
+                                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                                    <% if(news.image) { %>
+                                        <div style="width: 80px; height: 80px; flex-shrink: 0; border-radius: 10px; overflow: hidden;">
+                                            <img src="<%= news.image %>" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </div>
+                                    <% } else { %>
+                                        <div style="width: 80px; height: 80px; flex-shrink: 0; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                                            <i class="fa-solid fa-image" style="font-size: 24px; color: var(--text-muted);"></i>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                                            <% 
+                                                let badgeColor = 'bg-secondary';
+                                                if(news.category == 'info') badgeColor = 'bg-info';
+                                                if(news.category == 'maintenance') badgeColor = 'bg-danger';
+                                                if(news.category == 'promo') badgeColor = 'bg-warning';
+                                                if(news.category == 'service') badgeColor = 'bg-success';
+                                            %>
+                                            <span class="badge <%= badgeColor %>"><%= news.category.toUpperCase() %></span>
+                                            <span style="font-size: 12px; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> <%= new Date(news.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></span>
+                                        </div>
+
+                                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+                                            <a href="/news/<%= news.slug %>" style="color: white; text-decoration: none;"><%= news.title %></a>
+                                        </h3>
+                                        
+                                        <p style="color: #cbd5e1; font-size: 14px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                            <%= news.content %>
+                                        </p>
+
+                                        <a href="/news/<%= news.slug %>" style="display: inline-block; margin-top: 10px; font-size: 13px; color: var(--neon-blue); font-weight: 500;">
+                                            Baca Selengkapnya <i class="fa-solid fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div style="padding: 40px; text-align: center;">
+                        <i class="fa-solid fa-folder-open" style="font-size: 48px; color: var(--text-muted); margin-bottom: 15px;"></i>
+                        <p style="color: var(--text-muted);">Belum ada informasi terbaru saat ini.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+    .news-item-hover:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+</style>
+
+<%- include('../partials/footer') %>

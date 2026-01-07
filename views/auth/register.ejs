@@ -1,0 +1,81 @@
+<%- include('../partials/header') %>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo"><i class="fa-solid fa-user-plus"></i></div>
+            <h2>Buat Akun Baru</h2>
+            <p>Bergabung dengan Wanzofc Shop</p>
+        </div>
+
+        <form action="/auth/register" method="POST">
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fa-solid fa-id-card"></i></span>
+                    <input type="text" name="fullname" placeholder="Nama Lengkap Anda" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fa-solid fa-at"></i></span>
+                    <input type="text" name="username" placeholder="Buat username unik" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
+                    <input type="email" name="email" placeholder="Email aktif anda" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" name="password" placeholder="******" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Konfirmasi</label>
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fa-solid fa-check"></i></span>
+                        <input type="password" name="confirm_password" placeholder="******" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REFERRAL INPUT -->
+            <div class="form-group">
+                <label>Kode Referral (Opsional)</label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fa-solid fa-share-nodes"></i></span>
+                    <input type="text" name="referral" id="referralInput" placeholder="Kode teman anda" value="">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary">Daftar Sekarang</button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Sudah punya akun? <a href="/auth/login">Masuk</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Ambil parameter referral dari URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('referral');
+    if (refCode) {
+        document.getElementById('referralInput').value = refCode;
+        document.getElementById('referralInput').readOnly = true; // Opsional: Kunci input jika dari link
+    }
+</script>
+
+<%- include('../partials/footer') %>

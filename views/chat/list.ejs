@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb"><h2>Pesan Masuk</h2></div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-body p-0">
+                <% if(chatList.length > 0) { %>
+                    <% chatList.forEach(chat => { %>
+                        <a href="/chat/<%= chat.partner._id %>" style="display:flex; align-items:center; gap:15px; padding:15px; border-bottom:1px solid var(--glass-border); transition:0.2s;" class="news-item-hover">
+                            <img src="<%= chat.partner.profile_pic %>" style="width:50px; height:50px; border-radius:50%;">
+                            <div style="flex:1;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span style="font-weight:600; font-size:15px; color:white;"><%= chat.partner.username %></span>
+                                    <span style="font-size:11px; color:var(--text-muted);"><%= chat.time %></span>
+                                </div>
+                                <p style="font-size:13px; color:var(--text-muted); margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
+                                    <%= chat.lastMessage %>
+                                </p>
+                            </div>
+                        </a>
+                    <% }) %>
+                <% } else { %>
+                    <div style="padding:30px; text-align:center; color:var(--text-muted);">Belum ada pesan.</div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,91 @@
+<%- include('../partials/header') %>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+            <h2>Selamat Datang</h2>
+            <p>Silakan masuk untuk melanjutkan</p>
+        </div>
+
+        <form action="/auth/login" method="POST">
+            
+            <!-- Custom Role Selector (Cards) -->
+            <span class="role-label">Pilih Akses Masuk</span>
+            <div class="role-grid">
+                <!-- Member -->
+                <label>
+                    <input type="radio" name="role" value="member" class="role-radio" id="role_member" checked>
+                    <div class="role-card">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Member</span>
+                    </div>
+                </label>
+
+                <!-- Seller -->
+                <label>
+                    <input type="radio" name="role" value="seller" class="role-radio" id="role_seller">
+                    <div class="role-card">
+                        <i class="fa-solid fa-store"></i>
+                        <span>Seller</span>
+                    </div>
+                </label>
+
+                <!-- Admin -->
+                <label>
+                    <input type="radio" name="role" value="admin" class="role-radio" id="role_admin">
+                    <div class="role-card">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Admin</span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <div class="input-group">
+                    <input type="text" name="username" required placeholder="Masukkan username anda" autocomplete="off">
+                    <span class="input-icon"><i class="fa-solid fa-at"></i></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Kata Sandi</label>
+                <div class="input-group">
+                    <input type="password" name="password" required placeholder="Masukkan kata sandi" id="passwordInput">
+                    <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                </div>
+            </div>
+
+            <div class="form-options">
+                <label class="checkbox-container">
+                    <input type="checkbox" onclick="togglePassword()"> Tampilkan
+                </label>
+                <a href="#" class="forgot-password">Lupa Sandi?</a>
+            </div>
+
+            <button type="submit" class="btn-primary">
+                Masuk Sekarang <i class="fa-solid fa-arrow-right-to-bracket" style="margin-left: 8px;"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Belum punya akun? <a href="/auth/register">Daftar Akun</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword() {
+        var x = document.getElementById("passwordInput");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    }
+</script>
+
+<%- include('../partials/footer') %>

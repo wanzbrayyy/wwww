@@ -1,0 +1,53 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb"><h2>Pengaturan Website</h2></div>
+            </div>
+        </header>
+
+        <div class="content-card" style="max-width: 800px;">
+            <div class="card-body">
+                <form action="/admin/settings" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Judul Website</label>
+                        <input type="text" name="websiteTitle" class="form-control" value="<%= config.websiteTitle %>" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Logo Website</label>
+                            <input type="file" name="logo" class="form-control">
+                            <small class="text-muted">Kosongkan jika tidak ingin mengubah</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Favicon</label>
+                            <input type="file" name="favicon" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Maintenance Mode</label>
+                        <div style="display:flex;align-items:center;gap:10px; margin-top:5px;">
+                            <input type="checkbox" name="isMaintenance" style="width:20px;height:20px;" <%= config.isMaintenance ? 'checked' : '' %>>
+                            <span>Aktifkan Maintenance</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pesan Maintenance</label>
+                        <textarea name="maintenanceMessage" class="form-control" rows="3"><%= config.maintenanceMessage %></textarea>
+                    </div>
+
+                    <button class="btn-primary">Simpan Konfigurasi</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,39 @@
+<script>
+        // Toggle Sidebar Mobile
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const sidebarCollapse = document.getElementById('sidebarCollapse');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        if(sidebarCollapse) {
+            sidebarCollapse.addEventListener('click', () => {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            });
+        }
+
+        if(closeSidebar) {
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+
+        if(overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+
+        // Auto Hide Alert
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.style.display = 'none', 500);
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

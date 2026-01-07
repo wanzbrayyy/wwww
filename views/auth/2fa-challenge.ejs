@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+            <h2>Keamanan 2FA</h2>
+            <p>Masukkan kode dari Google Authenticator</p>
+        </div>
+        <form action="/auth/login" method="POST">
+            <input type="hidden" name="username" value="<%= username %>">
+            <input type="hidden" name="password" value="<%= password %>">
+            <input type="hidden" name="role" value="<%= role %>">
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-icon"><i class="fa-solid fa-key"></i></span>
+                    <input type="text" name="token" required placeholder="Kode 6 Digit" autocomplete="off">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Verifikasi</button>
+        </form>
+    </div>
+</div>
+<%- include('../partials/footer') %>

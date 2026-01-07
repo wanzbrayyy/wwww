@@ -1,0 +1,71 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Riwayat SMM</h2>
+                    <span>Daftar pesanan media sosial anda</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill"><div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div></div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header" style="justify-content: space-between;">
+                <h3><i class="fa-solid fa-list-check text-primary"></i> Data Pesanan</h3>
+                <div class="search-box">
+                   <!-- Bisa ditambahkan input search disini nanti -->
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Layanan</th>
+                                <th>Target</th>
+                                <th>Jumlah</th>
+                                <th>Status</th>
+                                <th>Remains</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if(orders.length > 0) { %>
+                                <% orders.forEach(order => { %>
+                                    <tr>
+                                        <td><span class="badge bg-secondary">#<%= order.order_id || order._id.toString().slice(-6) %></span></td>
+                                        <td><%= order.service_name %></td>
+                                        <td><a href="<%= order.target_link %>" target="_blank" class="text-primary"><i class="fa-solid fa-link"></i> Link</a></td>
+                                        <td><%= order.quantity %></td>
+                                        <td>
+                                            <% 
+                                            let color = 'bg-warning text-dark';
+                                            if(order.status === 'Success') color = 'bg-success text-white';
+                                            if(order.status === 'Error' || order.status === 'Partial') color = 'bg-danger text-white';
+                                            if(order.status === 'Processing') color = 'bg-info text-white';
+                                            %>
+                                            <span class="badge <%= color %>" style="padding: 5px 10px; border-radius: 4px;"><%= order.status %></span>
+                                        </td>
+                                        <td><%= order.remains %></td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr><td colspan="6" class="text-center p-4">Belum ada riwayat pesanan.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

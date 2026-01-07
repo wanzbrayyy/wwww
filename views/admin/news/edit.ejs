@@ -1,0 +1,44 @@
+<%- include('../../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../../partials/navbar') %>
+    <main class="main-content">
+        <div class="content-card">
+            <div class="card-header"><h3>Edit Berita</h3></div>
+            <div class="card-body">
+                <form action="/admin/news/edit/<%= news._id %>" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Judul</label>
+                        <input type="text" name="title" class="form-control" value="<%= news.title %>" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ganti Gambar (Opsional)</label>
+                        <input type="file" name="image" class="form-control">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select name="category" class="form-control">
+                                <option value="info" <%= news.category=='info'?'selected':'' %>>Info</option>
+                                <option value="promo" <%= news.category=='promo'?'selected':'' %>>Promo</option>
+                                <option value="maintenance" <%= news.category=='maintenance'?'selected':'' %>>Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Target</label>
+                            <select name="type" class="form-control">
+                                <option value="all" <%= news.type=='all'?'selected':'' %>>Semua</option>
+                                <option value="member" <%= news.type=='member'?'selected':'' %>>Member</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Konten</label>
+                        <textarea name="content" class="form-control" rows="10"><%= news.content %></textarea>
+                    </div>
+                    <button class="btn-primary">Simpan Perubahan</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../../partials/footer') %>

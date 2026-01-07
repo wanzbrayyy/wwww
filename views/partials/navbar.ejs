@@ -1,0 +1,176 @@
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="brand-logo">
+            <i class="fa-solid fa-bolt text-primary"></i> WANZOFC
+        </div>
+        <button class="close-sidebar" id="closeSidebar">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <div class="user-mini-profile">
+        <img src="<%= user.profile_pic %>" class="mini-avatar" alt="Profile">
+        <div class="mini-info">
+            <span class="mini-name"><%= user.username %></span>
+            <span class="mini-role" style="text-transform: uppercase;">
+                <% if(user.role === 'admin') { %>
+                    <i class="fa-solid fa-shield-halved text-danger"></i> Admin
+                <% } else if (user.role === 'seller') { %>
+                    <i class="fa-solid fa-store text-warning"></i> Seller
+                <% } else { %>
+                    <i class="fa-solid fa-user text-success"></i> Member
+                <% } %>
+            </span>
+        </div>
+        <a href="/profile" style="margin-left: auto; color: var(--text-muted); padding: 5px;" title="Pengaturan Akun">
+            <i class="fa-solid fa-gear"></i>
+        </a>
+        <a href="/auth/logout" style="color: #f87171; padding: 5px;" title="Keluar">
+            <i class="fa-solid fa-power-off"></i>
+        </a>
+    </div>
+    
+    <div class="sidebar-content">
+        <!-- MENU UTAMA -->
+        <div class="nav-section">
+            <div class="menu-label">Utama</div>
+            <ul class="list-unstyled components">
+                <li class="<%= title.includes('Dashboard') ? 'active' : '' %>">
+                    <a href="/dashboard">
+                        <i class="fa-solid fa-grid-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="<%= title.includes('Pusat Informasi') ? 'active' : '' %>">
+                    <a href="/information">
+                        <i class="fa-solid fa-newspaper"></i> Informasi & Berita
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+
+        <!-- MARKETPLACE -->
+        <div class="nav-section">
+            <div class="menu-label">Marketplace</div>
+            <ul class="list-unstyled components">
+                <li class="<%= title.includes('Marketplace') ? 'active' : '' %>">
+                    <a href="/marketplace">
+                        <i class="fa-solid fa-store"></i> Belanja Produk
+                    </a>
+                </li>
+                <li class="<%= title.includes('Chat') ? 'active' : '' %>">
+                    <a href="/chat">
+                        <i class="fa-solid fa-comments"></i> Chat / Pesan
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- KHUSUS SELLER & ADMIN -->
+        <% if(user.role === 'seller' || user.role === 'admin') { %>
+            <div class="nav-section">
+                <div class="menu-label" style="color: #fbbf24;">Panel Seller</div>
+                <ul class="list-unstyled components">
+                    <li class="<%= title.includes('Jual Produk') ? 'active' : '' %>">
+                        <a href="/marketplace/add">
+                            <i class="fa-solid fa-plus-circle text-warning"></i> Jual Produk Baru
+                        </a>
+                    </li>
+                    <li class="<%= title.includes('Toko') ? 'active' : '' %>">
+                        <a href="/marketplace/store/<%= user.id %>">
+                            <i class="fa-solid fa-shop text-warning"></i> Toko Saya
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        <% } %>
+
+        <!-- LAYANAN SMM & PPOB -->
+        <div class="nav-section">
+            <div class="menu-label">Layanan</div>
+            <ul class="list-unstyled components">
+                <li class="<%= title.includes('Pesan SMM') ? 'active' : '' %>">
+                    <a href="/smm/order">
+                        <i class="fa-solid fa-hashtag"></i> Pesan SMM
+                    </a>
+                </li>
+                <li class="<%= title.includes('Pesan PPOB') ? 'active' : '' %>">
+                    <a href="/ppob/order">
+                        <i class="fa-solid fa-mobile-screen-button"></i> Beli PPOB
+                    </a>
+                </li>
+                <li class="<%= title.includes('Deposit') ? 'active' : '' %>">
+                    <a href="/deposit">
+                        <i class="fa-solid fa-wallet"></i> Isi Saldo
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- RIWAYAT TRANSAKSI -->
+        <div class="nav-section">
+            <div class="menu-label">Riwayat</div>
+            <ul class="list-unstyled components">
+                <li class="<%= title.includes('Riwayat SMM') ? 'active' : '' %>">
+                    <a href="/smm/history">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Riwayat SMM
+                    </a>
+                </li>
+                <li class="<%= title.includes('Riwayat PPOB') ? 'active' : '' %>">
+                    <a href="/ppob/history">
+                        <i class="fa-solid fa-receipt"></i> Riwayat PPOB
+                    </a>
+                </li>
+                <li class="<%= title.includes('Riwayat Deposit') ? 'active' : '' %>">
+                    <a href="/deposit/history">
+                        <i class="fa-solid fa-file-invoice-dollar"></i> Riwayat Deposit
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- KHUSUS ADMINISTRATOR -->
+        <% if(user.role === 'admin') { %>
+            <div class="nav-section">
+                <div class="menu-label" style="color: #f87171;">Administrator</div>
+                <ul class="list-unstyled components">
+                    <li class="<%= title.includes('Kelola Berita') ? 'active' : '' %>">
+                        <a href="/admin/news">
+                            <i class="fa-solid fa-pen-to-square text-danger"></i> Kelola Berita
+                        </a>
+                    </li>
+                    <li class="<%= title.includes('Kelola User') ? 'active' : '' %>">
+                        <a href="/admin/users">
+                            <i class="fa-solid fa-users text-danger"></i> Kelola User
+                        </a>
+                    </li>
+                    <li class="<%= title.includes('Voucher') ? 'active' : '' %>">
+                        <a href="/admin/vouchers">
+                            <i class="fa-solid fa-ticket text-danger"></i> Kelola Voucher
+                        </a>
+                    </li>
+                    <li class="<%= title.includes('Flash Sale') ? 'active' : '' %>">
+                        <a href="/admin/flashsale">
+                            <i class="fa-solid fa-bolt text-danger"></i> Atur Flash Sale
+                        </a>
+                    </li>
+                    <li class="<%= title.includes('Broadcast') ? 'active' : '' %>">
+                        <a href="/admin/broadcast">
+                            <i class="fa-solid fa-bullhorn text-danger"></i> Broadcast Email
+                        </a>
+                    </li>
+                    <li class="<%= title.includes('Pengaturan') ? 'active' : '' %>">
+                        <a href="/admin/settings">
+                            <i class="fa-solid fa-gear text-danger"></i> Pengaturan Web
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- MINI PROFILE BAGIAN BAWAH -->
+
+</nav>
+
+<!-- Overlay untuk Mobile -->
+<div class="overlay" id="overlay"></div>

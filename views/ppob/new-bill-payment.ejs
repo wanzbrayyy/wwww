@@ -1,0 +1,183 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Beli PPOB</h2>
+                    <span>Topup Pulsa, Data, PLN, & E-Wallet</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill"><div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div></div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-mobile-retro text-success"></i> Form Transaksi</h3>
+            </div>
+            <div class="card-body">
+                <form action="/ppob/order" method="POST">
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="categorySelect" class="form-control" required>
+                            <option value="">-- Pilih Kategori --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Provider / Operator</label>
+                        <select id="operatorSelect" class="form-control" required disabled>
+                            <option value="">-- Pilih Operator --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Produk</label>
+                        <select id="serviceSelect" name="service_code" class="form-control" required disabled>
+                            <option value="">-- Pilih Produk --</option>
+                        </select>
+                        <input type="hidden" name="service_name" id="serviceNameInput">
+                        <input type="hidden" name="service_price" id="servicePriceInput">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nomor Tujuan / ID Pelanggan</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-phone"></i>
+                            <input type="text" name="target_number" class="form-control" placeholder="Contoh: 0812xxxx atau ID PLN" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Harga</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-tag"></i>
+                            <input type="text" id="priceDisplay" class="form-control" readonly value="Rp 0" style="font-weight: bold; color: #34d399;">
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info" id="noteBox" style="display:none; margin-bottom: 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                         <i class="fa-solid fa-circle-info"></i> <span id="noteText" style="font-size: 13px;"></span>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Beli Sekarang</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const servicesData = <%- JSON.stringify(services) %>;
+
+    const categorySelect = document.getElementById('categorySelect');
+    const operatorSelect = document.getElementById('operatorSelect');
+    const serviceSelect = document.getElementById('serviceSelect');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const serviceNameInput = document.getElementById('serviceNameInput');
+    const servicePriceInput = document.getElementById('servicePriceInput');
+    const noteBox = document.getElementById('noteBox');
+    const noteText = document.getElementById('noteText');
+
+    const categories = [...new Set(servicesData.map(item => item.category))].sort();
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+    });
+
+    categorySelect.addEventListener('change', function() {
+        const selectedCat = this.value;
+        
+        operatorSelect.innerHTML = '<option value="">-- Pilih Operator --</option>';
+        serviceSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
+        operatorSelect.disabled = true;
+        serviceSelect.disabled = true;
+        resetPrice();
+
+        if (selectedCat) {
+            const filteredByCat = servicesData.filter(item => item.category === selectedCat);
+            
+            // PERBAIKAN: Menggunakan 'oprator' sesuai API Jagoanpedia (bukan operator)
+            const operators = [...new Set(filteredByCat.map(item => item.oprator))].sort();
+            
+            operators.forEach(op => {
+                const option = document.createElement('option');
+                option.value = op;
+                option.textContent = op;
+                operatorSelect.appendChild(option);
+            });
+            operatorSelect.disabled = false;
+        }
+    });
+
+    operatorSelect.addEventListener('change', function() {
+        const selectedOp = this.value;
+        const selectedCat = categorySelect.value;
+        
+        serviceSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
+        serviceSelect.disabled = true;
+        resetPrice();
+
+        if (selectedOp) {
+            // PERBAIKAN: Filter menggunakan 'oprator'
+            const filteredServices = servicesData.filter(item => 
+                item.category === selectedCat && 
+                item.oprator === selectedOp && 
+                item.status === 'Active'
+            );
+
+            filteredServices.sort((a, b) => a.price - b.price);
+
+            filteredServices.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id; 
+                option.textContent = `${service.name} - Rp ${service.price.toLocaleString('id-ID')}`;
+                
+                option.dataset.price = service.price;
+                option.dataset.name = service.name;
+                option.dataset.note = service.note || '-';
+                
+                serviceSelect.appendChild(option);
+            });
+            serviceSelect.disabled = false;
+        }
+    });
+
+    serviceSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (selectedOption.value) {
+            const price = parseInt(selectedOption.dataset.price);
+            
+            priceDisplay.value = "Rp " + price.toLocaleString('id-ID');
+            serviceNameInput.value = selectedOption.dataset.name;
+            servicePriceInput.value = price;
+            
+            if(selectedOption.dataset.note && selectedOption.dataset.note !== '-' && selectedOption.dataset.note !== 'null') {
+                noteText.textContent = selectedOption.dataset.note;
+                noteBox.style.display = 'block';
+            } else {
+                noteBox.style.display = 'none';
+            }
+        } else {
+            resetPrice();
+        }
+    });
+
+    function resetPrice() {
+        priceDisplay.value = "Rp 0";
+        serviceNameInput.value = "";
+        servicePriceInput.value = "";
+        noteBox.style.display = 'none';
+    }
+</script>
+
+<%- include('../partials/footer') %>

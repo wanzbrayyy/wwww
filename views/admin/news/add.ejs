@@ -1,0 +1,44 @@
+<%- include('../../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../../partials/navbar') %>
+    <main class="main-content">
+        <div class="content-card">
+            <div class="card-header"><h3>Tambah Berita Baru</h3></div>
+            <div class="card-body">
+                <form action="/admin/news/add" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Judul Berita</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Gambar Banner</label>
+                        <input type="file" name="image" class="form-control">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select name="category" class="form-control">
+                                <option value="info">Info</option>
+                                <option value="promo">Promo</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Target</label>
+                            <select name="type" class="form-control">
+                                <option value="all">Semua</option>
+                                <option value="member">Member</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Isi Konten</label>
+                        <textarea name="content" class="form-control" rows="10"></textarea>
+                    </div>
+                    <button class="btn-primary">Publish</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../../partials/footer') %>

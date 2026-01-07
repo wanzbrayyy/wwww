@@ -1,0 +1,49 @@
+<%- include('../partials/header') %>
+<style>
+    .news-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .news-banner { width: 100%; height: 400px; object-fit: cover; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .news-meta { display: flex; gap: 15px; margin-bottom: 20px; font-size: 14px; color: var(--text-muted); }
+    .news-content { line-height: 1.8; font-size: 16px; color: #e2e8f0; }
+    .share-btn { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; background: rgba(255,255,255,0.1); border-radius: 50px; margin-top: 30px; cursor: pointer; transition: 0.3s; }
+    .share-btn:hover { background: var(--primary); }
+    @media(max-width: 768px) { .news-banner { height: 250px; } }
+</style>
+
+<div class="news-container">
+    <a href="/" style="display:flex; align-items:center; gap:10px; margin-bottom:20px; color:var(--text-muted);"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+    
+    <% if(news.image) { %>
+        <img src="<%= news.image %>" class="news-banner">
+    <% } %>
+
+    <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 15px;"><%= news.title %></h1>
+    
+    <div class="news-meta">
+        <span><i class="fa-solid fa-user"></i> <%= news.author %></span>
+        <span><i class="fa-solid fa-calendar"></i> <%= new Date(news.createdAt).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+        <span class="badge bg-info"><%= news.category.toUpperCase() %></span>
+    </div>
+
+    <div class="news-content">
+        <%- news.content.replace(/\n/g, '<br>') %>
+    </div>
+
+    <div class="share-btn" onclick="shareNews()">
+        <i class="fa-solid fa-share-nodes"></i> Bagikan Berita
+    </div>
+</div>
+
+<script>
+    function shareNews() {
+        if (navigator.share) {
+            navigator.share({
+                title: '<%= news.title %>',
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link disalin ke clipboard!');
+        }
+    }
+</script>
+<%- include('../partials/footer') %>

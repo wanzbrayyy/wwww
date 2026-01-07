@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maintenance Mode</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+        .m-box { max-width: 500px; padding: 40px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; }
+        .m-icon { font-size: 60px; color: var(--warning); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="m-box">
+        <i class="fa-solid fa-screwdriver-wrench m-icon"></i>
+        <h1>Under Maintenance</h1>
+        <p style="margin-top: 10px; color: #cbd5e1;"><%= config.maintenanceMessage %></p>
+        <% if(config.websiteLogo) { %>
+            <img src="<%= config.websiteLogo %>" style="width: 50px; margin-top: 20px;">
+        <% } %>
+    </div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<%- include('../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <header class="top-header"><div class="breadcrumb"><h2>Kelola Voucher</h2></div></header>
+        
+        <div class="content-card">
+            <div class="card-header"><h3>Buat Voucher Baru</h3></div>
+            <div class="card-body">
+                <form action="/admin/vouchers/add" method="POST">
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1">
+                            <label>Kode Voucher</label>
+                            <input type="text" name="code" class="form-control" required placeholder="DISKON50">
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label>Tipe</label>
+                            <select name="type" class="form-control">
+                                <option value="balance">Saldo Gratis</option>
+                                <option value="discount">Diskon Marketplace (%)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1">
+                            <label>Nilai (Saldo / % Diskon)</label>
+                            <input type="number" name="value" class="form-control" required>
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label>Kuota</label>
+                            <input type="number" name="quota" class="form-control" required value="100">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1">
+                            <label>Min. Belanja (Khusus Diskon)</label>
+                            <input type="number" name="minPurchase" class="form-control" value="0">
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label>Max Diskon (Khusus Diskon)</label>
+                            <input type="number" name="maxDiscount" class="form-control" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Durasi Aktif (Hari)</label>
+                        <input type="number" name="days" class="form-control" value="7">
+                    </div>
+                    <button class="btn-primary">Buat Voucher</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="content-card" style="margin-top:20px;">
+            <div class="card-header"><h3>Daftar Voucher</h3></div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead><tr><th>Kode</th><th>Tipe</th><th>Nilai</th><th>Kuota</th><th>Exp</th></tr></thead>
+                    <tbody>
+                        <% vouchers.forEach(v => { %>
+                            <tr>
+                                <td><%= v.code %></td>
+                                <td><%= v.type %></td>
+                                <td><%= v.value %></td>
+                                <td><%= v.quota %></td>
+                                <td><%= new Date(v.expiresAt).toLocaleDateString() %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../partials/footer') %>

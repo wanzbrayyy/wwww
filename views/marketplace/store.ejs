@@ -1,0 +1,66 @@
+<%- include('../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb"><h2>Etalase Toko</h2></div>
+            </div>
+        </header>
+
+        <div class="content-card" style="margin-bottom:30px; background:linear-gradient(45deg, #1e293b, #0f172a);">
+            <div class="card-body" style="display:flex; align-items:center; gap:20px;">
+                <img src="<%= seller.profile_pic %>" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--neon-blue);">
+                <div>
+                    <h2 style="font-size:24px; margin:0;"><%= seller.fullname %></h2>
+                    <p style="color:var(--text-muted);">@<%= seller.username %></p>
+                    <div style="margin-top:10px; display:flex; gap:10px;">
+                        <span class="badge bg-info">Seller Terverifikasi</span>
+                        <% if(currentUser && currentUser.id !== seller._id.toString()) { %>
+                            <a href="/chat/<%= seller._id %>" class="badge bg-secondary" style="text-decoration:none;"><i class="fa-solid fa-envelope"></i> Kirim Pesan</a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom:20px;">Produk dari <%= seller.username %></h3>
+        <div class="mp-grid">
+            <% if(products.length > 0) { %>
+                <% products.forEach(prod => { %>
+                    <div class="mp-card" style="position: relative;">
+                        
+                        <!-- TOMBOL EDIT & HAPUS KHUSUS PEMILIK -->
+                        <% if(currentUser && (currentUser.id === seller._id.toString() || currentUser.role === 'admin')) { %>
+                            <div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 5px;">
+                                <a href="/marketplace/edit/<%= prod._id %>" class="badge bg-warning text-dark" style="text-decoration:none; cursor:pointer;">
+                                    <i class="fa-solid fa-pen"></i> Edit
+                                </a>
+                                <a href="/marketplace/delete/<%= prod._id %>" class="badge bg-danger text-white" style="text-decoration:none; cursor:pointer;" onclick="return confirm('Yakin ingin menghapus produk ini?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </div>
+                        <% } %>
+
+                        <a href="/marketplace/product/<%= prod.slug %>"><img src="<%= prod.image %>" class="mp-img"></a>
+                        <div class="mp-details">
+                            <div class="mp-title"><%= prod.name %></div>
+                            <span class="mp-price">Rp <%= prod.price.toLocaleString('id-ID') %></span>
+                            <div class="mp-seller" style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:var(--text-muted);">
+                                <span><i class="fa-solid fa-bag-shopping"></i> <%= prod.sold %> Terjual</span>
+                                <span><i class="fa-solid fa-star text-warning"></i> <%= prod.averageRating.toFixed(1) %></span>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div style="grid-column: 1/-1; text-align:center; padding:50px; color:var(--text-muted);">
+                    <i class="fa-solid fa-box-open" style="font-size:40px; margin-bottom:10px;"></i>
+                    <p>Belum ada produk di toko ini.</p>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</div>
+<%- include('../partials/footer') %>
