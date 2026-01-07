@@ -1,0 +1,59 @@
+<%- include('../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <header class="top-header"><div class="breadcrumb"><h2>Tools Penerjemah</h2></div></header>
+        
+        <div class="content-card" style="max-width:800px;">
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Teks Asli</label>
+                    <textarea id="sourceText" class="form-control" rows="5" placeholder="Masukkan teks di sini..."></textarea>
+                </div>
+                
+                <div style="display:flex; justify-content:center; margin:20px 0;">
+                    <select id="targetLang" class="form-control" style="width:auto;">
+                        <option value="en">English</option>
+                        <option value="id">Indonesia</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ar">Arabic</option>
+                        <option value="es">Spanish</option>
+                    </select>
+                    <button class="btn-primary" onclick="doTranslate()" style="width:auto; margin-left:10px;">
+                        <i class="fa-solid fa-language"></i> Terjemahkan
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>Hasil Terjemahan</label>
+                    <textarea id="resultText" class="form-control" rows="5" readonly style="background:rgba(0,0,0,0.4);"></textarea>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+async function doTranslate() {
+    const text = document.getElementById('sourceText').value;
+    const lang = document.getElementById('targetLang').value;
+    const resBox = document.getElementById('resultText');
+    
+    if(!text) return;
+    
+    resBox.value = 'Translating...';
+    
+    try {
+        const response = await fetch('/api/translate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ text, targetLang: lang })
+        });
+        const data = await response.json();
+        resBox.value = data.translatedText;
+    } catch(e) {
+        resBox.value = 'Error occurred.';
+    }
+}
+</script>
+<%- include('../partials/footer') %>

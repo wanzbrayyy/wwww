@@ -3,15 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wanzofc shop - solusi smm & ppob terbaik</title>
+    <title><%= typeof title !== 'undefined' ? title : seo.title %></title>
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : seo.description %>">
+    <link rel="canonical" href="<%= seo.url %>">
     
+    <meta property="og:type" content="<%= seo.type %>">
+    <meta property="og:url" content="<%= seo.url %>">
+    <meta property="og:title" content="<%= typeof title !== 'undefined' ? title : seo.title %>">
+    <meta property="og:description" content="<%= typeof description !== 'undefined' ? description : seo.description %>">
+    <meta property="og:image" content="<%= typeof image !== 'undefined' ? image : seo.image %>">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- CSS Internal untuk Halaman Ini -->
     <style>
         :root {
             --primary: #58a6ff;
@@ -21,170 +27,76 @@
             --text-main: #c9d1d9;
             --text-secondary: #8b949e;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         html { scroll-behavior: smooth; }
-
         body {
             font-family: 'inter', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             overflow-x: hidden;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Navigasi */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .landing-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 0;
-            z-index: 1000;
-            background: rgba(13, 17, 23, 0.8);
-            backdrop-filter: blur(10px);
+            position: fixed; top: 0; left: 0; width: 100%; padding: 15px 0; z-index: 1000;
+            background: rgba(13, 17, 23, 0.8); backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border);
         }
-
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .brand {
-            font-size: 20px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .brand { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
         .brand i { color: var(--primary); }
-
-        .nav-buttons {
-            display: flex;
-            gap: 15px;
-        }
+        .nav-buttons { display: flex; gap: 15px; }
         .btn {
-            display: inline-block;
-            padding: 8px 18px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: 0.3s ease;
+            display: inline-block; padding: 8px 18px; border-radius: 6px;
+            font-size: 14px; font-weight: 600; text-decoration: none; transition: 0.3s ease;
         }
         .btn-login { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
         .btn-login:hover { background: var(--bg-light); color: var(--text-main); }
         .btn-register { background: var(--primary); color: var(--bg-dark); }
         .btn-register:hover { opacity: 0.8; }
-
-        /* Hero Section */
         .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding-top: 80px;
-            position: relative;
-            overflow: hidden;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; padding-top: 80px; position: relative; overflow: hidden;
         }
         .hero::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(88, 166, 255, 0.15) 0%, transparent 70%);
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 800px; height: 800px; background: radial-gradient(circle, rgba(88, 166, 255, 0.15) 0%, transparent 70%);
             z-index: -1;
         }
-
         .hero-content h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 900;
-            margin-bottom: 20px;
-            line-height: 1.1;
-            letter-spacing: -2px;
+            font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; margin-bottom: 20px;
+            line-height: 1.1; letter-spacing: -2px;
             background: linear-gradient(135deg, #fff 40%, var(--text-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .highlight { color: var(--primary); }
-        
         .hero-content p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            max-width: 700px;
-            margin: 0 auto 30px;
+            font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto 30px;
         }
-
-        /* Sections */
-        .section {
-            padding: 100px 0;
-            border-bottom: 1px solid var(--border);
-        }
+        .section { padding: 100px 0; border-bottom: 1px solid var(--border); }
         .section-header { text-align: center; margin-bottom: 60px; }
         .section-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; }
         .section-header p { color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .feature-card {
-            background: var(--bg-light);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            transition: 0.3s;
+            background: var(--bg-light); padding: 30px; border-radius: 12px;
+            border: 1px solid var(--border); transition: 0.3s;
         }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-        }
+        .feature-card:hover { transform: translateY(-5px); border-color: var(--primary); }
         .feature-card i { font-size: 24px; color: var(--primary); margin-bottom: 15px; }
         .feature-card h3 { font-size: 1.2rem; margin-bottom: 10px; }
         .feature-card p { font-size: 0.95rem; color: var(--text-secondary); }
-
-        .about-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            align-items: center;
-        }
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
         .about-image { width: 100%; border-radius: 12px; }
-
         .cta-section {
             background: linear-gradient(135deg, #1e293b, var(--bg-dark));
-            padding: 60px;
-            border-radius: 20px;
-            text-align: center;
+            padding: 60px; border-radius: 20px; text-align: center;
         }
-
-        footer {
-            padding: 40px 0;
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            .about-grid { grid-template-columns: 1fr; }
-        }
+        footer { padding: 40px 0; text-align: center; color: var(--text-secondary); font-size: 14px; }
+        @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <!-- NAVIGASI TETAP -->
     <nav class="landing-nav">
         <div class="container nav-content">
             <div class="brand">
@@ -198,76 +110,89 @@
         </div>
     </nav>
 
-    <!-- BAGIAN 1: HERO UTAMA -->
-    <section class="hero">
-        <div class="container hero-content">
-            <h1 class="hero-title">
-                platform <span class="highlight">#1</span> untuk semua <br> kebutuhan digital anda.
-            </h1>
-            <p class="hero-subtitle">
-                dari menaikkan engagement sosial media dengan layanan smm, hingga membayar tagihan bulanan dengan ppob, wanzofc shop hadir sebagai pusat solusi all-in-one yang cepat, aman, dan terjangkau.
-            </p>
-            <div class="hero-buttons">
-                <a href="/auth/register" class="btn btn-register" style="padding: 12px 30px; font-size: 16px;">
-                    mulai petualangan anda <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
-                </a>
+    <% if (typeof variant !== 'undefined' && variant === 'A') { %>
+        <section class="hero">
+            <div class="container hero-content">
+                <h1 class="hero-title">
+                    platform <span class="highlight">#1</span> untuk semua <br> kebutuhan digital anda.
+                </h1>
+                <p class="hero-subtitle">
+                    solusi all-in-one untuk smm, ppob, topup game dan marketplace produk digital dengan proses otomatis 24 jam.
+                </p>
+                <div class="hero-buttons">
+                    <a href="/auth/register" class="btn btn-register" style="padding: 12px 30px; font-size: 16px;">
+                        mulai sekarang <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                    </a>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    <% } else { %>
+        <section class="hero" style="background: radial-gradient(circle at top, #1e293b, #0d1117);">
+            <div class="container hero-content" style="text-align: left; display: flex; align-items: center; gap: 30px;">
+                <div style="flex: 1;">
+                    <h1 class="hero-title" style="font-size: 3rem;">tingkatkan bisnis digital anda</h1>
+                    <ul style="list-style: none; padding: 0; margin: 20px 0; color: #8b949e;">
+                        <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:var(--primary); margin-right:10px;"></i> transaksi otomatis 24 jam</li>
+                        <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:var(--primary); margin-right:10px;"></i> harga termurah & bersaing</li>
+                        <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:var(--primary); margin-right:10px;"></i> api developer ready</li>
+                    </ul>
+                    <a href="/auth/register" class="btn btn-register" style="padding: 12px 30px;">gabung gratis</a>
+                </div>
+                <div style="flex: 1; text-align: right; display: flex; justify-content: center;">
+                    <i class="fa-solid fa-rocket" style="font-size: 15rem; opacity: 0.2; color: white;"></i>
+                </div>
+            </div>
+        </section>
+    <% } %>
 
-    <!-- BAGIAN 2: FITUR UNGGULAN -->
     <section class="section" id="fitur">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">semua ada di sini.</h2>
-                <p class="section-subtitle">kami menyediakan layanan terlengkap yang dirancang untuk memudahkan hidup anda dan meningkatkan brand anda di dunia digital.</p>
+                <p class="section-subtitle">layanan lengkap untuk memaksimalkan potensi digital anda.</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
                     <i class="fa-solid fa-hashtag"></i>
                     <h3>layanan smm</h3>
-                    <p>butuh followers, likes, atau views? kami punya ribuan layanan untuk instagram, tiktok, youtube, dan lainnya dengan proses instan 24 jam.</p>
+                    <p>ribuan layanan sosial media terbaik untuk instagram, tiktok, youtube, dan lainnya.</p>
                 </div>
                 <div class="feature-card">
                     <i class="fa-solid fa-bolt-lightning"></i>
                     <h3>ppob & topup</h3>
-                    <p>isi pulsa, kuota data, token pln, voucher game, hingga bayar tagihan bpjs dan pdam. semua lebih murah dan tanpa antri.</p>
+                    <p>isi pulsa, kuota, token pln, dan voucher game dengan harga termurah.</p>
                 </div>
                 <div class="feature-card">
                     <i class="fa-solid fa-store"></i>
-                    <h3>marketplace digital</h3>
-                    <p>temukan dan jual produk digital seperti script, akun premium, atau e-course. pasar yang aman untuk para kreator dan developer.</p>
+                    <h3>marketplace</h3>
+                    <p>jual beli produk digital seperti script, akun premium, dan e-course dengan aman.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- BAGIAN 3: TENTANG KAMI -->
     <section class="section" id="tentang">
         <div class="container">
             <div class="about-grid">
                 <div class="about-text">
-                    <h2 class="section-title" style="text-align: left; margin-bottom: 20px;">mengapa harus wanzofc shop?</h2>
+                    <h2 class="section-title" style="text-align: left; margin-bottom: 20px;">mengapa wanzofc?</h2>
                     <p class="section-subtitle" style="text-align: left; margin: 0 0 20px 0;">
-                        kami bukan sekadar panel smm biasa. kami adalah ekosistem digital. didirikan dengan satu misi: menyediakan platform yang andal dan mudah diakses bagi semua orang.
-                        <br><br>
-                        dengan dukungan teknologi terkini, tim support yang responsif, dan komitmen pada keamanan, kami ingin memastikan setiap transaksi anda berjalan lancar. bergabunglah dengan ribuan pengguna lain yang telah mempercayakan kebutuhan digitalnya kepada kami.
+                        kami adalah ekosistem digital yang dirancang untuk kecepatan dan keamanan. dengan dukungan teknologi terkini dan tim support yang responsif, kami memastikan setiap transaksi anda berjalan lancar.
                     </p>
                 </div>
                 <div class="about-image-container">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070" alt="Dashboard Analitik" class="about-image">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070" alt="Analitik" class="about-image">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- BAGIAN 4: AJAKAN BERGABUNG (CTA) -->
     <section class="section" id="gabung">
         <div class="container">
             <div class="cta-section">
                 <h2 class="section-title">terima kasih sudah mampir!</h2>
                 <p class="section-subtitle" style="margin-bottom: 30px;">
-                    kami sangat senang anda mengunjungi kami. sekarang, saatnya mengambil langkah selanjutnya. buat akun gratis anda hari ini dan rasakan sendiri kemudahan bertransaksi di wanzofc shop. tidak ada biaya tersembunyi, hanya kemudahan tanpa batas.
+                    bergabunglah dengan ribuan pengguna lain dan nikmati kemudahan transaksi digital.
                 </p>
                 <a href="/auth/register" class="btn btn-register" style="padding: 15px 40px; font-size: 18px;">
                     daftar gratis sekarang!
@@ -276,56 +201,34 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer>
         <div class="container">
-            <p>&copy; wanzofc shop.</p>
+            <p>&copy;  wanzofc shop.</p>
         </div>
     </footer>
 
-    <!-- GSAP & ANIMATION SCRIPT -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script>
         gsap.registerPlugin(ScrollTrigger);
-
-        // Animasi Hero
         gsap.from(".hero-title", { duration: 1, y: 50, opacity: 0, ease: "power4.out", delay: 0.2 });
         gsap.from(".hero-subtitle", { duration: 1, y: 50, opacity: 0, ease: "power4.out", delay: 0.4 });
         gsap.from(".hero-buttons", { duration: 1, y: 50, opacity: 0, ease: "power4.out", delay: 0.6 });
-
-        // Animasi Section Title saat Scroll
+        
         gsap.utils.toArray('.section-title, .section-subtitle').forEach(elem => {
             gsap.from(elem, {
-                duration: 0.8,
-                y: 50,
-                opacity: 0,
-                ease: 'power3.out',
-                scrollTrigger: {
-                    trigger: elem,
-                    start: 'top 85%',
-                    toggleActions: 'play none none none'
-                }
+                duration: 0.8, y: 50, opacity: 0, ease: 'power3.out',
+                scrollTrigger: { trigger: elem, start: 'top 85%', toggleActions: 'play none none none' }
             });
         });
 
-        // Animasi Card saat Scroll
         gsap.utils.toArray('.feature-card').forEach((card, i) => {
             gsap.from(card, {
-                duration: 0.8,
-                y: 50,
-                opacity: 0,
-                ease: 'power3.out',
-                scrollTrigger: {
-                    trigger: card,
-                    start: 'top 85%',
-                    toggleActions: 'play none none none'
-                },
-                delay: i * 0.1
+                duration: 0.8, y: 50, opacity: 0, ease: 'power3.out', delay: i * 0.1,
+                scrollTrigger: { trigger: card, start: 'top 85%', toggleActions: 'play none none none' }
             });
         });
 
-        // Animasi About saat Scroll
         gsap.from(".about-text", {
             duration: 1, x: -50, opacity: 0, ease: 'power3.out',
             scrollTrigger: { trigger: ".about-grid", start: 'top 70%' }
@@ -335,12 +238,10 @@
             scrollTrigger: { trigger: ".about-grid", start: 'top 70%' }
         });
 
-        // Animasi CTA
         gsap.from(".cta-section", {
             duration: 1, scale: 0.95, opacity: 0, ease: 'power3.out',
             scrollTrigger: { trigger: ".cta-section", start: 'top 80%' }
         });
     </script>
-
 </body>
 </html>

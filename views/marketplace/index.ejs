@@ -1,24 +1,41 @@
 <%- include('../partials/header') %>
 
 <div class="dashboard-wrapper">
-    <%- include('../partials/navbar') %>
+    <!-- HANYA TAMPILKAN NAVBAR JIKA USER SUDAH LOGIN -->
+    <% if (user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
 
-    <main class="main-content">
+    <!-- Ubah margin agar full width jika belum login -->
+    <main class="main-content" style="<%= user ? '' : 'margin-left:0; width:100%;' %>">
         <header class="top-header">
             <div style="display:flex; align-items:center;">
-                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <!-- Hamburger hanya muncul jika login -->
+                <% if (user) { %>
+                    <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <% } %>
                 <div class="breadcrumb">
                     <h2>Marketplace</h2>
                     <span>Jual beli produk digital terpercaya</span>
                 </div>
             </div>
-            <div class="balance-card">
-                Rp <%= user.balance.toLocaleString('id-ID') %>
-            </div>
+
+            <!-- Tampilkan saldo jika login, atau tombol login jika belum -->
+            <% if (user) { %>
+                <div class="balance-card">
+                    Rp <%= (user.balance || 0).toLocaleString('id-ID') %>
+                </div>
+            <% } else { %>
+                <div>
+                    <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px; background:transparent; border:1px solid var(--glass-border); color:var(--text-main);">Login</a>
+                    <a href="/auth/register" class="btn-primary" style="width:auto; padding:8px 15px;">Daftar</a>
+                </div>
+            <% } %>
         </header>
 
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-            <% if(user.role === 'seller' || user.role === 'admin') { %>
+            <!-- Tombol "Jual Produk" hanya untuk Seller/Admin yang sedang login -->
+            <% if(user && (user.role === 'seller' || user.role === 'admin')) { %>
                 <a href="/marketplace/add" class="btn-primary" style="width:auto; display:inline-block; padding: 10px 20px;">
                     <i class="fa-solid fa-plus-circle"></i> Jual Produk Baru
                 </a>

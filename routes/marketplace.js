@@ -15,6 +15,7 @@ const upload = multer({
 
 const ensureAuthenticated = (req, res, next) => {
     if (req.session.user) return next();
+    req.flash('error_msg', 'Silakan login terlebih dahulu untuk melakukan aksi ini');
     res.redirect('/auth/login');
 };
 
@@ -36,7 +37,7 @@ router.post('/api/upload', ensureAuthenticated, ensureSeller, upload.single('fil
     }
 });
 
-router.get('/', ensureAuthenticated, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const { sort, category, search } = req.query;
         let query = {};
@@ -56,38 +57,75 @@ router.get('/', ensureAuthenticated, async (req, res) => {
             title: 'Marketplace',
             css: 'dashboard.css',
             products,
-            user: req.session.user,
+            user: req.session.user || null, // Kirim null jika belum login
             query: req.query
         });
     } catch (err) {
-        res.redirect('/dashboard');
+        res.redirect('/');
     }
 });
 
-router.get('/product/:slug', ensureAuthenticated, async (req, res) => {
+// HAPUS ensureAuthenticated agar bisa diakses publik
+router.get('/product/:slug', async (req, res) => {
     try {
         const product = await Product.findOne({ slug: req.params.slug })
             .populate('seller', 'username fullname profile_pic isVerified')
             .populate('reviews.user', 'username profile_pic');
-        
-        const hasBought = await Transaction.findOne({ 
-            buyer: req.session.user.id, 
-            product: product._id 
-        });
+
+        if (!product) return res.redirect('/marketplace');
+
+        let hasBought = false;
+        if (req.session.user) {
+            const transaction = await Transaction.findOne({ 
+                buyer: req.session.user.id, 
+                product: product._id 
+            });
+            hasBought = !!transaction;
+        }
+
+        const schema = {
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": product.name,
+            "image": product.image,
+            "description": product.description,
+            "sku": product._id,
+            "offers": {
+                "@type": "Offer",
+                "url": `https://api.wanzofc.site/marketplace/product/${product.slug}`,
+                "priceCurrency": "IDR",
+                "price": product.price,
+                "availability": "https://schema.org/InStock"
+            }
+        };
+
+        if (product.reviews.length > 0) {
+            schema.aggregateRating = {
+                "@type": "AggregateRating",
+                "ratingValue": product.averageRating.toFixed(1),
+                "reviewCount": product.reviews.length
+            };
+        }
+
+        res.locals.seo.title = `${product.name} - Jual Murah`;
+        res.locals.seo.description = product.description.substring(0, 150);
+        res.locals.seo.image = product.image;
+        res.locals.seo.type = 'product';
+        res.locals.seo.schema = schema;
 
         res.render('marketplace/detail', {
             title: product.name,
             css: 'dashboard.css',
             product,
-            hasBought: !!hasBought,
-            user: req.session.user
+            hasBought,
+            user: req.session.user || null
         });
     } catch (err) {
         res.redirect('/marketplace');
     }
 });
 
-router.get('/store/:sellerId', ensureAuthenticated, async (req, res) => {
+router.get('/store/:sellerId', async (req, res) => {
     try {
         const seller = await User.findById(req.params.sellerId);
         const products = await Product.find({ seller: seller._id }).sort({ createdAt: -1 });
@@ -97,7 +135,7 @@ router.get('/store/:sellerId', ensureAuthenticated, async (req, res) => {
             css: 'dashboard.css',
             seller,
             products,
-            currentUser: req.session.user 
+            currentUser: req.session.user || null
         });
     } catch (err) {
         res.redirect('/marketplace');
@@ -108,18 +146,12 @@ router.get('/add', ensureAuthenticated, ensureSeller, (req, res) => {
     res.render('marketplace/add', { title: 'Jual Produk', css: 'dashboard.css' });
 });
 
-router.post('/add', ensureAuthenticated, ensureSeller, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'productFile', maxCount: 1 }]), async (req, res) => {
+router.post('/add', ensureAuthenticated, ensureSeller, upload.single('image'), async (req, res) => {
     const { name, description, price, category, deliveryType, deliveryContent } = req.body;
     try {
         let imageUrl = 'https://files.catbox.moe/8u328u.png';
-        let finalContent = deliveryContent || '';
-
-        if (req.files['image']) {
-            imageUrl = await uploadToCatbox(req.files['image'][0].buffer, req.files['image'][0].originalname);
-        }
-
-        if (deliveryType === 'auto' && req.files['productFile']) {
-            finalContent = await uploadToCatbox(req.files['productFile'][0].buffer, req.files['productFile'][0].originalname);
+        if (req.file) {
+            imageUrl = await uploadToCatbox(req.file.buffer, req.file.originalname);
         }
 
         const newProduct = new Product({
@@ -127,14 +159,13 @@ router.post('/add', ensureAuthenticated, ensureSeller, upload.fields([{ name: 'i
             name, description, price, category,
             image: imageUrl,
             deliveryType,
-            deliveryContent: finalContent
+            deliveryContent
         });
 
         await newProduct.save();
         req.flash('success_msg', 'Produk berhasil dijual');
         res.redirect('/marketplace');
     } catch (err) {
-        req.flash('error_msg', 'Gagal memposting produk');
         res.redirect('/marketplace/add');
     }
 });
@@ -143,7 +174,6 @@ router.get('/edit/:id', ensureAuthenticated, ensureSeller, async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
         if (product.seller.toString() !== req.session.user.id && req.session.user.role !== 'admin') {
-            req.flash('error_msg', 'Akses ditolak');
             return res.redirect('/marketplace');
         }
         res.render('marketplace/edit', { title: 'Edit Produk', css: 'dashboard.css', product });
@@ -159,20 +189,16 @@ router.post('/edit/:id', ensureAuthenticated, ensureSeller, upload.single('image
         if (product.seller.toString() !== req.session.user.id && req.session.user.role !== 'admin') {
             return res.redirect('/marketplace');
         }
-
         product.name = name;
         product.description = description;
         product.price = price;
         product.category = category;
         product.deliveryType = deliveryType;
         product.deliveryContent = deliveryContent;
-
         if (req.file) {
             product.image = await uploadToCatbox(req.file.buffer, req.file.originalname);
         }
-
         await product.save();
-        req.flash('success_msg', 'Produk diperbarui');
         res.redirect(`/marketplace/store/${product.seller}`);
     } catch (err) {
         res.redirect(`/marketplace/edit/${req.params.id}`);
@@ -186,13 +212,13 @@ router.get('/delete/:id', ensureAuthenticated, ensureSeller, async (req, res) =>
             return res.redirect('/marketplace');
         }
         await Product.findByIdAndDelete(req.params.id);
-        req.flash('success_msg', 'Produk dihapus');
         res.redirect(`/marketplace/store/${req.session.user.id}`);
     } catch (err) {
         res.redirect('/marketplace');
     }
 });
 
+// TAMBAHKAN ensureAuthenticated untuk melindungi aksi beli
 router.post('/buy/:id', ensureAuthenticated, async (req, res) => {
     const { voucherCode } = req.body;
     try {
@@ -206,7 +232,6 @@ router.post('/buy/:id', ensureAuthenticated, async (req, res) => {
         }
 
         let finalPrice = product.price;
-        
         if (product.flashSaleEnd > new Date() && product.flashSalePrice > 0) {
             finalPrice = product.flashSalePrice;
         } else {
@@ -230,7 +255,6 @@ router.post('/buy/:id', ensureAuthenticated, async (req, res) => {
         }
 
         finalPrice = Math.ceil(finalPrice);
-
         if (buyer.balance < finalPrice) {
             req.flash('error_msg', 'Saldo tidak mencukupi');
             return res.redirect('/marketplace/product/' + product.slug);
@@ -238,16 +262,12 @@ router.post('/buy/:id', ensureAuthenticated, async (req, res) => {
 
         buyer.balance -= finalPrice;
         seller.balance += finalPrice;
-        
         buyer.monthlySpend = (buyer.monthlySpend || 0) + finalPrice;
         product.sold += 1;
 
         const transaction = new Transaction({
-            buyer: buyer._id,
-            product: product._id,
-            seller: seller._id,
-            price: finalPrice,
-            deliveryContent: product.deliveryType === 'auto' ? product.deliveryContent : 'Menunggu pengiriman manual via Chat.'
+            buyer: buyer._id, product: product._id, seller: seller._id, price: finalPrice,
+            deliveryContent: product.deliveryType === 'auto' ? product.deliveryContent : 'Manual via Chat.'
         });
 
         await buyer.save();
@@ -258,7 +278,6 @@ router.post('/buy/:id', ensureAuthenticated, async (req, res) => {
         req.session.user.balance = buyer.balance;
 
         if (product.deliveryType === 'auto') {
-            const isUrl = product.deliveryContent.startsWith('http');
             const emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
                     <div style="background-color: #0f172a; padding: 20px; text-align: center;">
@@ -305,6 +324,7 @@ router.post('/buy/:id', ensureAuthenticated, async (req, res) => {
     }
 });
 
+// TAMBAHKAN ensureAuthenticated untuk melindungi aksi review
 router.post('/review/:id', ensureAuthenticated, async (req, res) => {
     const { rating, comment } = req.body;
     try {

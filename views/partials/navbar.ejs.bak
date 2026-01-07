@@ -57,19 +57,11 @@
                         <i class="fa-solid fa-book-open-reader"></i> Tutorial
                     </a>
                 </li>
-<li class="<%= title.includes('Afiliasi') ? 'active' : '' %>">
-                    <a href="/affiliate">
-                        <i class="fa-solid fa-share-nodes"></i> Program Afiliasi
-                    </a>
-                </li>
-                <!-- AKHIR TAMBAHAN -->
-
                 <li class="<%= title.includes('Pusat Informasi') ? 'active' : '' %>">
                     <a href="/information">
                         <i class="fa-solid fa-newspaper"></i> Informasi & Berita
                     </a>
                 </li>
-            
             </ul>
         </div>
         <div class="nav-section">

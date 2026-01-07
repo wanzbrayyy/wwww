@@ -1,0 +1,50 @@
+<%- include('../partials/header') %>
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb"><h2>Program Afiliasi</h2></div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-body">
+                <h3>Link Referral Anda</h3>
+                <div class="form-group" style="margin-top: 10px;">
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-link"></i>
+                        <input type="text" value="<%= referralLink %>" class="form-control" readonly>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px;">Banner Promosi</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Download banner ini dan bagikan ke media sosial.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- Banner 1 -->
+                    <div style="border: 1px solid var(--glass-border); padding: 10px; border-radius: 10px;">
+                        <div style="width: 100%; height: 150px; background: linear-gradient(45deg, #3b82f6, #8b5cf6); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white;">
+                            <h2 style="margin: 0; font-size: 24px;">WANZOFC SHOP</h2>
+                            <p>Gabung Sekarang & Dapat Bonus!</p>
+                            <small>Kode: <%= user.referralCode %></small>
+                        </div>
+                        <a href="#" class="btn-primary" style="margin-top: 10px; display: block; text-align: center;">Download Banner</a>
+                    </div>
+
+                    <!-- Banner 2 -->
+                    <div style="border: 1px solid var(--glass-border); padding: 10px; border-radius: 10px;">
+                        <div style="width: 100%; height: 150px; background: linear-gradient(45deg, #f59e0b, #ef4444); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white;">
+                            <h2 style="margin: 0; font-size: 24px;">FLASH SALE!</h2>
+                            <p>Produk Digital Termurah</p>
+                            <small>api.wanzofc.site</small>
+                        </div>
+                        <a href="#" class="btn-primary" style="margin-top: 10px; display: block; text-align: center;">Download Banner</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<%- include('../partials/footer') %>

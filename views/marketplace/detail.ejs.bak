@@ -1,14 +1,30 @@
 <%- include('../partials/header') %>
 
 <div class="dashboard-wrapper">
-    <%- include('../partials/navbar') %>
+    <!-- Navbar akan otomatis disembunyikan jika user belum login -->
+    <% if(user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
 
-    <main class="main-content">
+    <!-- Ubah margin agar full width jika belum login -->
+    <main class="main-content" style="<%= user ? '' : 'margin-left:0; width:100%;' %>">
         <header class="top-header">
             <div style="display:flex;align-items:center;">
-                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <!-- Hamburger hanya muncul jika login -->
+                <% if(user) { %>
+                    <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <% } else { %>
+                    <a href="/marketplace" class="btn-primary" style="width:auto; padding:5px 10px; margin-right:15px;">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </a>
+                <% } %>
                 <div class="breadcrumb"><h2>Detail Produk</h2></div>
             </div>
+            <% if(user) { %>
+                <div class="balance-card">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div>
+            <% } else { %>
+                <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px;">Login untuk Beli</a>
+            <% } %>
         </header>
 
         <div class="content-card">
@@ -21,58 +37,68 @@
                         <h1 style="font-size:28px; margin-bottom:10px;"><%= product.name %></h1>
                         <div style="display:flex; gap:15px; margin-bottom:20px; font-size:14px; color:var(--text-muted);">
                             <span><i class="fa-solid fa-tag"></i> <%= product.category %></span>
-                            <span><i class="fa-solid fa-star text-warning"></i> <%= product.averageRating.toFixed(1) %> (<%= product.reviews.length %> Ulasan)</span>
+                            <span><i class="fa-solid fa-star text-warning"></i> <%= product.averageRating.toFixed(1) %> (<%= product.reviews.length %>)</span>
                             <span><i class="fa-solid fa-bag-shopping"></i> <%= product.sold %> Terjual</span>
                         </div>
-                        <h2 style="color:#34d399; font-family:monospace; font-size:32px; margin-bottom:20px;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
+
+                        <% if(product.flashSaleEnd > new Date() && product.flashSalePrice > 0) { %>
+                            <div style="margin-bottom:10px;"><span class="badge bg-danger">FLASH SALE</span></div>
+                            <h2 style="color:#ef4444; text-decoration:line-through;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
+                            <h2 style="color:#34d399; font-size:32px;">Rp <%= product.flashSalePrice.toLocaleString('id-ID') %></h2>
+                        <% } else { %>
+                            <% 
+                                let finalPrice = product.price;
+                                if(user && user.rank === 'Silver') finalPrice *= 0.98;
+                                if(user && user.rank === 'Gold') finalPrice *= 0.95;
+                            %>
+                            <% if(finalPrice < product.price) { %>
+                                <small style="color:#fbbf24;">Harga Rank <%= user.rank %></small>
+                                <h2 style="color:#34d399; font-size:32px;">Rp <%= Math.ceil(finalPrice).toLocaleString('id-ID') %></h2>
+                                <small style="text-decoration:line-through;">Rp <%= product.price.toLocaleString('id-ID') %></small>
+                            <% } else { %>
+                                <h2 style="color:#34d399; font-size:32px;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
+                            <% } %>
+                        <% } %>
                         
-                        <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; margin-bottom:20px; display:flex; align-items:center; gap:15px;">
+                        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin:20px 0; display:flex; align-items:center; gap:15px;">
                             <img src="<%= product.seller.profile_pic %>" style="width:40px; height:40px; border-radius:50%;">
                             <div>
-                                <div style="font-weight:600;"><%= product.seller.fullname %> 
-                                    <% if(product.seller.isVerified) { %><i class="fa-solid fa-circle-check text-info"></i><% } %>
-                                </div>
+                                <div style="font-weight:600;"><%= product.seller.fullname %></div>
                                 <a href="/marketplace/store/<%= product.seller._id %>" style="font-size:12px; color:var(--neon-blue);">Kunjungi Toko</a>
                             </div>
-                            <a href="/chat/<%= product.seller._id %>" class="btn-primary" style="width:auto; margin-left:auto; background:var(--glass-border);">
-                                <i class="fa-regular fa-comments"></i> Chat
-                            </a>
+                            <% if(user && user.id !== product.seller._id.toString()) { %>
+                                <a href="/chat/<%= product.seller._id %>" class="btn-primary" style="width:auto; margin-left:auto; background:rgba(255,255,255,0.1);"><i class="fa-regular fa-comments"></i> Chat</a>
+                            <% } %>
                         </div>
 
-                        <form action="/marketplace/buy/<%= product._id %>" method="POST" onsubmit="return confirm('Konfirmasi pembelian? Saldo akan terpotong.')">
-                            <button class="btn-primary" style="padding:15px; font-size:16px;">
+                        <form id="buyForm" action="/marketplace/buy/<%= product._id %>" method="POST">
+                            <% if(user) { %>
+                                <div class="form-group">
+                                    <label>Kode Voucher (Opsional)</label>
+                                    <input type="text" name="voucherCode" class="form-control" placeholder="Kode promo">
+                                </div>
+                            <% } %>
+                            <button type="button" onclick="handleBuy()" class="btn-primary" style="padding:15px; font-size:16px;">
                                 <i class="fa-solid fa-cart-shopping"></i> Beli Sekarang
                             </button>
                         </form>
-                        <p style="font-size:12px; color:var(--text-muted); margin-top:10px; text-align:center;">
-                            <i class="fa-solid fa-bolt"></i> <%= product.deliveryType === 'auto' ? 'Pengiriman Otomatis ke Email' : 'Pengiriman Manual oleh Penjual' %>
-                        </p>
-
-                        <div style="margin-top:30px;">
-                            <h3>Deskripsi</h3>
-                            <p style="color:#cbd5e1; line-height:1.6; white-space:pre-wrap;"><%= product.description %></p>
-                        </div>
-                    </div>
-                </div>
-
+                        
+<div style="margin-top:30px; position:relative;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-size:18px;">Deskripsi</h3>
+        <button class="badge bg-secondary border-0" onclick="translateContent('descProduct', 'en')" style="cursor:pointer;">
+            <i class="fa-solid fa-language"></i> Translate to English
+        </button>
+    </div>
+    <p id="descProduct" style="color:#cbd5e1; line-height:1.6; white-space:pre-wrap;"><%= product.description %></p>
+</div>
                 <div style="margin-top:50px; border-top:1px solid var(--glass-border); padding-top:30px;">
                     <h3>Ulasan Pembeli</h3>
-                    
-                    <% if(hasBought) { %>
-                        <form action="/marketplace/review/<%= product._id %>" method="POST" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:10px; margin:20px 0;">
+                    <% if(user && hasBought && !product.reviews.find(r => r.user._id.toString() === user.id)) { %>
+                        <form action="/marketplace/review/<%= product._id %>" method="POST" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; margin:20px 0;">
                             <h4>Tulis Ulasan</h4>
-                            <div class="form-group">
-                                <select name="rating" class="form-control" style="width:100px;">
-                                    <option value="5">⭐⭐⭐⭐⭐</option>
-                                    <option value="4">⭐⭐⭐⭐</option>
-                                    <option value="3">⭐⭐⭐</option>
-                                    <option value="2">⭐⭐</option>
-                                    <option value="1">⭐</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <textarea name="comment" class="form-control" placeholder="Bagaimana produk ini?" rows="2"></textarea>
-                            </div>
+                            <div class="form-group"><select name="rating" class="form-control"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select></div>
+                            <div class="form-group"><textarea name="comment" class="form-control" placeholder="Ulasan anda..." rows="2"></textarea></div>
                             <button class="btn-primary" style="width:auto;">Kirim Ulasan</button>
                         </form>
                     <% } %>
@@ -80,15 +106,13 @@
                     <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
                         <% if(product.reviews.length > 0) { %>
                             <% product.reviews.forEach(review => { %>
-                                <div style="background:var(--glass-bg); padding:15px; border-radius:8px; border:1px solid var(--glass-border);">
-                                    <div style="display:flex; justify-content:space-between;">
-                                        <div style="display:flex; gap:10px; align-items:center;">
-                                            <img src="<%= review.user.profile_pic %>" style="width:30px; height:30px; border-radius:50%;">
-                                            <span style="font-weight:600; font-size:14px;"><%= review.user.username %></span>
-                                        </div>
-                                        <span style="color:#fbbf24;"><i class="fa-solid fa-star"></i> <%= review.rating %></span>
+                                <div style="background:var(--glass-bg); padding:15px; border-radius:8px;">
+                                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                                        <img src="<%= review.user.profile_pic %>" style="width:30px; height:30px; border-radius:50%;">
+                                        <span style="font-weight:600;"><%= review.user.username %></span>
+                                        <span style="margin-left:auto; color:#fbbf24;"><i class="fa-solid fa-star"></i> <%= review.rating %></span>
                                     </div>
-                                    <p style="margin-top:10px; font-size:14px; color:#e2e8f0;"><%= review.comment %></p>
+                                    <p style="font-size:14px; color:#e2e8f0;"><%= review.comment %></p>
                                 </div>
                             <% }) %>
                         <% } else { %>
@@ -100,4 +124,20 @@
         </div>
     </main>
 </div>
+
+<script>
+    function handleBuy() {
+        // Cek jika variabel 'user' (dari EJS) ada atau tidak
+        const isLoggedIn = !!<%- JSON.stringify(user) %>;
+
+        if (isLoggedIn) {
+            if (confirm('Konfirmasi pembelian? Saldo akan terpotong.')) {
+                document.getElementById('buyForm').submit();
+            }
+        } else {
+            alert('Anda harus login terlebih dahulu untuk membeli produk.');
+            window.location.href = '/auth/login';
+        }
+    }
+</script>
 <%- include('../partials/footer') %>

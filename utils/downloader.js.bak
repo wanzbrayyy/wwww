@@ -1,0 +1,87 @@
+const axios = require('axios');
+
+// TIKTOK DOWNLOADER (TikWM)
+async function tiktokdl(url) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const response = await axios.get(`https://www.tikwm.com/api/?url=${url}`);
+            const { data } = response.data;
+            if (data) {
+                resolve({
+                    status: true,
+                    text: data.title,
+                    cover: data.cover,
+                    videonowm: data.play,
+                    videonowm2: data.wmplay,
+                    music: data.music,
+                    author: data.author.nickname,
+                    avatar: data.author.avatar,
+                    images: data.images || null
+                });
+            } else {
+                reject(new Error('Video tidak ditemukan.'));
+            }
+        } catch (e) {
+            reject(new Error('Gagal menghubungi server TikTok.'));
+        }
+    });
+}
+
+// INSTAGRAM STALK (API Delirius)
+async function igStalk(username) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const cleanUser = username.replace('@', '').trim();
+            // Menggunakan API Delirius yang stabil
+            const { data } = await axios.get(`https://deliriussapi-oficial.vercel.app/tools/igstalk?username=${cleanUser}`);
+
+            if (data && data.status && data.data) {
+                const res = data.data;
+                resolve({
+                    status: true,
+                    username: res.username,
+                    fullname: res.fullName || res.username,
+                    bio: res.biography || 'Tidak ada bio',
+                    photo: res.profilePicHD || res.profilePic,
+                    followers: res.followers || 0,
+                    following: res.following || 0,
+                    posts: res.posts || 0,
+                    isPrivate: res.isPrivate || false,
+                    verified: res.isVerified || false,
+                    url: `https://instagram.com/${res.username}`
+                });
+            } else {
+                reject(new Error('Username tidak ditemukan.'));
+            }
+        } catch (e) {
+            console.error('IG Stalk Error:', e.message);
+            reject(new Error('Gagal mengambil data. Username mungkin salah atau API down.'));
+        }
+    });
+}
+
+// INSTAGRAM DOWNLOADER (API Delirius)
+async function igDownload(url) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Menggunakan API Delirius untuk Download
+            const { data } = await axios.get(`https://deliriussapi-oficial.vercel.app/tools/igdl?url=${url}`);
+
+            if (data && data.status && data.data && data.data.length > 0) {
+                const result = data.data.map(item => ({
+                    url: item.url_download || item.url,
+                    thumb: item.thumbnail || 'https://files.catbox.moe/8u328u.png',
+                    type: (item.url_download || item.url).includes('.mp4') ? 'video' : 'image'
+                }));
+                resolve(result);
+            } else {
+                reject(new Error('Media tidak ditemukan atau akun private.'));
+            }
+        } catch (e) {
+            console.error('IG DL Error:', e.message);
+            reject(new Error('Gagal download. Pastikan link benar.'));
+        }
+    });
+}
+
+module.exports = { tiktokdl, igStalk, igDownload };

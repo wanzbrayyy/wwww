@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Chat = require('../models/chat');
 const User = require('../models/user');
+const { translateText } = require('../utils/translator');
 const moment = require('moment');
 
 const ensureAuthenticated = (req, res, next) => {
@@ -71,11 +72,21 @@ router.get('/:partnerId', ensureAuthenticated, async (req, res) => {
 router.post('/send', ensureAuthenticated, async (req, res) => {
     const { receiverId, message } = req.body;
     try {
+        const transEn = await translateText(message, 'en');
+        const transId = await translateText(message, 'id');
+
         await new Chat({
             sender: req.session.user.id,
             receiver: receiverId,
-            message
+            message: message, 
+            originalMessage: message,
+            language: 'auto',
+            translations: {
+                en: transEn,
+                id: transId
+            }
         }).save();
+        
         res.redirect(`/chat/${receiverId}`);
     } catch (err) {
         res.redirect('/chat');

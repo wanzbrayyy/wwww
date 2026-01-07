@@ -3,38 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof title != 'undefined' ? title : 'wanzofc shop' %></title>
     
-    <!-- Google Fonts: Poppins -->
+    <!-- Meta Tags Dinamis -->
+    <title><%= typeof title !== 'undefined' ? title : seo.title %></title>
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : seo.description %>">
+    <link rel="canonical" href="<%= seo.url %>">
+    <meta name="robots" content="index, follow">
+
+    <!-- Social Graph (Open Graph / Facebook) -->
+    <meta property="og:type" content="<%= seo.type %>">
+    <meta property="og:url" content="<%= seo.url %>">
+    <meta property="og:title" content="<%= typeof title !== 'undefined' ? title : seo.title %>">
+    <meta property="og:description" content="<%= typeof description !== 'undefined' ? description : seo.description %>">
+    <meta property="og:image" content="<%= typeof image !== 'undefined' ? image : seo.image %>">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title : seo.title %>">
+    <meta name="twitter:description" content="<%= typeof description !== 'undefined' ? description : seo.description %>">
+    <meta name="twitter:image" content="<%= typeof image !== 'undefined' ? image : seo.image %>">
+
+    <!-- Schema Markup (JSON-LD) -->
+    <% if (seo.schema) { %>
+        <script type="application/ld+json">
+            <%- JSON.stringify(seo.schema) %>
+        </script>
+    <% } else { %>
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Wanzofc Shop",
+            "url": "https://api.wanzofc.site",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://api.wanzofc.site/marketplace?search={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        }
+        </script>
+    <% } %>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= analytics.ga_id %>"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<%= analytics.ga_id %>');
+    </script>
+
+    <!-- Facebook Pixel -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '<%= analytics.fb_pixel_id %>');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=<%= analytics.fb_pixel_id %>&ev=PageView&noscript=1"
+    /></noscript>
+
+    <!-- Styles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome 6.4.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Global CSS -->
     <link rel="stylesheet" href="/css/global.css">
-    
-    <!-- Page Specific CSS -->
     <% if(typeof css !== 'undefined') { %>
         <link rel="stylesheet" href="/css/<%= css %>">
     <% } %>
 </head>
 <body>
-    <!-- Flash Messages Container -->
-    <% if(success_msg != '') { %>
-        <div class="alert alert-success">
-            <i class="fa-solid fa-circle-check"></i> <%= success_msg %>
-        </div>
-    <% } %>
-    <% if(error_msg != '') { %>
-        <div class="alert alert-danger">
-            <i class="fa-solid fa-triangle-exclamation"></i> <%= error_msg %>
-        </div>
-    <% } %>
-    <% if(error != '') { %>
-        <div class="alert alert-danger">
-            <i class="fa-solid fa-circle-xmark"></i> <%= error %>
-        </div>
-    <% } %>

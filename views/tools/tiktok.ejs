@@ -1,0 +1,162 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb">
+                    <h2>TikTok Downloader</h2>
+                    <span>Support Video, Slide Foto & Musik</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-card" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-body">
+                <form action="/tools/tiktok" method="POST" onsubmit="showLoading()">
+                    <div class="form-group">
+                        <label>URL Video / Slide TikTok</label>
+                        <div class="input-with-icon">
+                            <i class="fa-brands fa-tiktok"></i>
+                            <input type="text" name="url" class="form-control" placeholder="Paste link di sini..." required>
+                        </div>
+                    </div>
+                    <button class="btn-primary" type="submit" id="btnSubmit">
+                        <i class="fa-solid fa-download"></i> Download Sekarang
+                    </button>
+                </form>
+
+                <% if (typeof error !== 'undefined' && error !== null) { %>
+                    <div class="alert alert-danger" style="margin-top: 20px;">
+                        <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
+                    </div>
+                <% } %>
+
+                <% if (result) { %>
+                    <div style="margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 20px; animation: slideUp 0.5s ease;">
+                        
+                        <!-- Header Author -->
+                        <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
+                            <img src="<%= result.avatar %>" style="width:50px; height:50px; border-radius:50%; border:2px solid var(--neon-blue);">
+                            <div>
+                                <h4 style="margin:0; font-size:16px;"><%= result.author %></h4>
+                                <span style="font-size:12px; color:var(--text-muted);">Creator</span>
+                            </div>
+                        </div>
+
+                        <!-- Caption -->
+                        <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 20px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
+                            <%= result.text %>
+                        </p>
+
+                        <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                            
+                            <% if (result.images && result.images.length > 0) { %>
+                                <!-- TAMPILAN SLIDE FOTO -->
+                                <h4 style="margin-bottom:15px; color:#fff;"><i class="fa-regular fa-images"></i> TikTok Slide Detected</h4>
+                                <div class="slide-container">
+                                    <% result.images.forEach((img, index) => { %>
+                                        <div class="slide-item">
+                                            <img src="<%= img %>" loading="lazy">
+                                            <a href="<%= img %>" target="_blank" class="btn-download-sm">
+                                                <i class="fa-solid fa-download"></i> Foto <%= index + 1 %>
+                                            </a>
+                                        </div>
+                                    <% }) %>
+                                </div>
+
+                            <% } else { %>
+                                <!-- TAMPILAN VIDEO PLAYER -->
+                                <h4 style="margin-bottom:15px; color:#fff;"><i class="fa-solid fa-play"></i> Preview Video</h4>
+                                <div style="width:100%; max-width:350px; margin:0 auto 20px auto; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                                    <video controls style="width:100%; display:block;" poster="<%= result.cover %>">
+                                        <source src="<%= result.videonowm %>" type="video/mp4">
+                                        Browser anda tidak support video tag.
+                                    </video>
+                                </div>
+                                <a href="<%= result.videonowm %>" class="btn-primary" target="_blank" style="text-align: center; text-decoration: none; background: #34d399; color: #064e3b; margin-bottom:10px;">
+                                    <i class="fa-solid fa-file-video"></i> Download Video (No Watermark)
+                                </a>
+                            <% } %>
+
+                            <!-- AUDIO PLAYER -->
+                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <h4 style="margin-bottom:10px; font-size:14px;"><i class="fa-solid fa-music"></i> Audio / Musik</h4>
+                                <audio controls style="width:100%; margin-bottom:10px;">
+                                    <source src="<%= result.music %>" type="audio/mpeg">
+                                </audio>
+                                <a href="<%= result.music %>" class="btn-primary" target="_blank" style="text-align: center; text-decoration: none; background: #3b82f6; color: white;">
+                                    <i class="fa-solid fa-download"></i> Download Audio MP3
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function showLoading() {
+        const btn = document.getElementById('btnSubmit');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+    }
+</script>
+
+<style>
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Styling untuk Slide Foto */
+    .slide-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        max-height: 500px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .slide-item {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+    }
+
+    .slide-item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .btn-download-sm {
+        display: block;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        text-align: center;
+        padding: 5px;
+        font-size: 11px;
+        text-decoration: none;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        transition: 0.2s;
+    }
+
+    .btn-download-sm:hover {
+        background: var(--neon-blue);
+    }
+</style>
+
+<%- include('../partials/footer') %>

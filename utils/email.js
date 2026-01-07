@@ -33,7 +33,7 @@ const sendEmail = async (to, subject, htmlContent) => {
                 ${htmlContent}
             </div>
             <div class="footer">
-                <p>&copy; 2024 Wanzofc Shop. All rights reserved.</p>
+                <p>&copy; 2026 wanzofc shop. all rights reserved.</p>
             </div>
         </div>
     </body>
