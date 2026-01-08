@@ -1,13 +1,16 @@
 <%- include('../partials/header') %>
 
 <div class="dashboard-wrapper">
+    <!-- Navbar akan otomatis disembunyikan jika user belum login -->
     <% if(user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
+    <!-- Ubah margin agar full width jika belum login -->
     <main class="main-content" style="<%= user ? '' : 'margin-left:0; width:100%;' %>">
         <header class="top-header">
             <div style="display:flex;align-items:center;">
+                <!-- Hamburger hanya muncul jika login -->
                 <% if(user) { %>
                     <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
                 <% } else { %>
@@ -20,7 +23,7 @@
             <% if(user) { %>
                 <div class="balance-card">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div>
             <% } else { %>
-                <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px;">Login</a>
+                <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px;">Login untuk Beli</a>
             <% } %>
         </header>
 
@@ -28,60 +31,51 @@
             <div class="card-body">
                 <div style="display:flex; gap:30px; flex-wrap:wrap;">
                     <div style="flex:1; min-width:300px;">
-                        <img src="<%= product.image %>" style="width:100%; border-radius:10px; border:1px solid var(--glass-border); object-fit:cover;">
+                        <img src="<%= product.image %>" style="width:100%; border-radius:10px; border:1px solid var(--glass-border);">
                     </div>
                     <div style="flex:1.5; min-width:300px;">
                         <h1 style="font-size:28px; margin-bottom:10px;"><%= product.name %></h1>
                         <div style="display:flex; gap:15px; margin-bottom:20px; font-size:14px; color:var(--text-muted);">
-                            <span class="badge bg-secondary"><%= product.category.toUpperCase() %></span>
-                            <span><i class="fa-solid fa-star text-warning"></i> <%= product.averageRating.toFixed(1) %> (<%= product.reviews.length %> Ulasan)</span>
+                            <span><i class="fa-solid fa-tag"></i> <%= product.category %></span>
+                            <span><i class="fa-solid fa-star text-warning"></i> <%= product.averageRating.toFixed(1) %> (<%= product.reviews.length %>)</span>
                             <span><i class="fa-solid fa-bag-shopping"></i> <%= product.sold %> Terjual</span>
                         </div>
 
                         <% if(product.flashSaleEnd > new Date() && product.flashSalePrice > 0) { %>
-                            <div style="margin-bottom:15px;">
-                                <span class="badge bg-danger" style="padding:8px 12px; font-size:12px;">
-                                    <i class="fa-solid fa-bolt"></i> FLASH SALE BERAKHIR <%= new Date(product.flashSaleEnd).toLocaleString('id-ID') %>
-                                </span>
-                            </div>
-                            <h2 style="color:#ef4444; text-decoration:line-through; font-size:18px;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
-                            <h2 style="color:#34d399; font-size:32px; font-family:monospace; margin-bottom:20px;">Rp <%= product.flashSalePrice.toLocaleString('id-ID') %></h2>
+                            <div style="margin-bottom:10px;"><span class="badge bg-danger">FLASH SALE</span></div>
+                            <h2 style="color:#ef4444; text-decoration:line-through;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
+                            <h2 style="color:#34d399; font-size:32px;">Rp <%= product.flashSalePrice.toLocaleString('id-ID') %></h2>
                         <% } else { %>
                             <% 
                                 let finalPrice = product.price;
                                 if(user && user.rank === 'Silver') finalPrice *= 0.98;
                                 if(user && user.rank === 'Gold') finalPrice *= 0.95;
                             %>
-                            <% if(user && finalPrice < product.price) { %>
-                                <small style="color:#fbbf24; font-weight:600;"><i class="fa-solid fa-crown"></i> Harga Rank <%= user.rank %></small>
-                                <h2 style="color:#34d399; font-size:32px; font-family:monospace; margin-bottom:5px;">Rp <%= Math.ceil(finalPrice).toLocaleString('id-ID') %></h2>
-                                <small style="text-decoration:line-through; color:var(--text-muted)">Rp <%= product.price.toLocaleString('id-ID') %></small>
+                            <% if(finalPrice < product.price) { %>
+                                <small style="color:#fbbf24;">Harga Rank <%= user.rank %></small>
+                                <h2 style="color:#34d399; font-size:32px;">Rp <%= Math.ceil(finalPrice).toLocaleString('id-ID') %></h2>
+                                <small style="text-decoration:line-through;">Rp <%= product.price.toLocaleString('id-ID') %></small>
                             <% } else { %>
-                                <h2 style="color:#34d399; font-size:32px; font-family:monospace; margin-bottom:20px;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
+                                <h2 style="color:#34d399; font-size:32px;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
                             <% } %>
                         <% } %>
                         
-                        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin:20px 0; display:flex; align-items:center; gap:15px; border:1px solid var(--glass-border);">
-                            <img src="<%= product.seller.profile_pic %>" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin:20px 0; display:flex; align-items:center; gap:15px;">
+                            <img src="<%= product.seller.profile_pic %>" style="width:40px; height:40px; border-radius:50%;">
                             <div>
-                                <div style="font-weight:600; font-size:15px;">
-                                    <%= product.seller.fullname %> 
-                                    <% if(product.seller.isVerified) { %><i class="fa-solid fa-circle-check text-info" title="Verified"></i><% } %>
-                                </div>
+                                <div style="font-weight:600;"><%= product.seller.fullname %></div>
                                 <a href="/marketplace/store/<%= product.seller._id %>" style="font-size:12px; color:var(--neon-blue);">Kunjungi Toko</a>
                             </div>
                             <% if(user && user.id !== product.seller._id.toString()) { %>
-                                <a href="/chat/<%= product.seller._id %>" class="btn-primary" style="width:auto; margin-left:auto; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border);">
-                                    <i class="fa-regular fa-comments"></i> Chat
-                                </a>
+                                <a href="/chat/<%= product.seller._id %>" class="btn-primary" style="width:auto; margin-left:auto; background:rgba(255,255,255,0.1);"><i class="fa-regular fa-comments"></i> Chat</a>
                             <% } %>
                         </div>
 
                         <form id="buyForm" action="/marketplace/buy/<%= product._id %>" method="POST">
                             <% if(user) { %>
                                 <div class="form-group">
-                                    <label style="font-size:12px; color:var(--text-muted);">Kode Voucher (Opsional)</label>
-                                    <input type="text" name="voucherCode" class="form-control" placeholder="Masukkan kode promo">
+                                    <label>Kode Voucher (Opsional)</label>
+                                    <input type="text" name="voucherCode" class="form-control" placeholder="Kode promo">
                                 </div>
                             <% } %>
                             <button type="button" onclick="handleBuy()" class="btn-primary" style="padding:15px; font-size:16px;">
@@ -89,74 +83,38 @@
                             </button>
                         </form>
                         
-                        <div style="margin-top:15px; font-size:12px; color:var(--text-muted); text-align:center; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
-                            <i class="fa-solid fa-truck-fast"></i> Pengiriman: 
-                            <strong style="color:white;"><%= product.deliveryType === 'auto' ? 'Otomatis (Instan ke Email)' : 'Manual (Dikirim Penjual)' %></strong>
-                        </div>
-
-                        <div style="margin-top:30px; padding-top:20px; border-top:1px solid var(--glass-border);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                <h3 style="font-size:18px; margin:0;">Deskripsi Produk</h3>
-                                <button onclick="translateContent('descProduct', 'en')" style="background:transparent; border:1px solid var(--neon-blue); color:var(--neon-blue); padding:5px 12px; border-radius:20px; font-size:11px; cursor:pointer;">
-                                    <i class="fa-solid fa-language"></i> Translate
-                                </button>
-                            </div>
-                            <div id="descProduct" style="color:#cbd5e1; line-height:1.7; white-space:pre-wrap; font-size:14px;"><%= product.description %></div>
+                        <div style="margin-top:30px;">
+                            <h3>Deskripsi</h3>
+                            <p style="color:#cbd5e1; line-height:1.6; white-space:pre-wrap;"><%= product.description %></p>
                         </div>
                     </div>
                 </div>
 
                 <div style="margin-top:50px; border-top:1px solid var(--glass-border); padding-top:30px;">
-                    <h3 style="margin-bottom:20px;">Ulasan Pembeli</h3>
-                    
+                    <h3>Ulasan Pembeli</h3>
                     <% if(user && hasBought && !product.reviews.find(r => r.user._id.toString() === user.id)) { %>
-                        <form action="/marketplace/review/<%= product._id %>" method="POST" style="background:rgba(255,255,255,0.03); padding:20px; border-radius:12px; margin-bottom:30px; border:1px solid var(--glass-border);">
-                            <h4 style="margin-bottom:15px;">Berikan Ulasan</h4>
-                            <div class="form-group">
-                                <select name="rating" class="form-control" style="width:150px;">
-                                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                                    <option value="4">⭐⭐⭐⭐ (4)</option>
-                                    <option value="3">⭐⭐⭐ (3)</option>
-                                    <option value="2">⭐⭐ (2)</option>
-                                    <option value="1">⭐ (1)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <textarea name="comment" class="form-control" placeholder="Tulis pengalaman anda tentang produk ini..." rows="3"></textarea>
-                            </div>
+                        <form action="/marketplace/review/<%= product._id %>" method="POST" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; margin:20px 0;">
+                            <h4>Tulis Ulasan</h4>
+                            <div class="form-group"><select name="rating" class="form-control"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select></div>
+                            <div class="form-group"><textarea name="comment" class="form-control" placeholder="Ulasan anda..." rows="2"></textarea></div>
                             <button class="btn-primary" style="width:auto;">Kirim Ulasan</button>
                         </form>
                     <% } %>
 
-                    <div style="display:flex; flex-direction:column; gap:15px;">
+                    <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
                         <% if(product.reviews.length > 0) { %>
                             <% product.reviews.forEach(review => { %>
-                                <div style="background:var(--glass-bg); padding:20px; border-radius:12px; border:1px solid var(--glass-border);">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                        <div style="display:flex; gap:12px; align-items:center;">
-                                            <img src="<%= review.user.profile_pic %>" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
-                                            <div>
-                                                <div style="font-weight:600; font-size:14px;"><%= review.user.username %></div>
-                                                <div style="font-size:11px; color:var(--text-muted);"><%= new Date(review.createdAt).toLocaleDateString('id-ID') %></div>
-                                            </div>
-                                        </div>
-                                        <div style="color:#fbbf24; font-size:14px;">
-                                            <% for(let i=0; i<review.rating; i++) { %><i class="fa-solid fa-star"></i><% } %>
-                                        </div>
+                                <div style="background:var(--glass-bg); padding:15px; border-radius:8px;">
+                                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                                        <img src="<%= review.user.profile_pic %>" style="width:30px; height:30px; border-radius:50%;">
+                                        <span style="font-weight:600;"><%= review.user.username %></span>
+                                        <span style="margin-left:auto; color:#fbbf24;"><i class="fa-solid fa-star"></i> <%= review.rating %></span>
                                     </div>
-                                    <p id="review-<%= review._id %>" style="font-size:14px; color:#e2e8f0; line-height:1.5; margin-bottom:5px;">
-                                        <%= review.comment %>
-                                    </p>
-                                    <small onclick="translateContent('review-<%= review._id %>', 'en')" style="color:var(--neon-blue); cursor:pointer; font-size:11px; display:inline-flex; align-items:center; gap:5px;">
-                                        <i class="fa-solid fa-language"></i> Translate
-                                    </small>
+                                    <p style="font-size:14px; color:#e2e8f0;"><%= review.comment %></p>
                                 </div>
                             <% }) %>
                         <% } else { %>
-                            <div style="text-align:center; padding:30px; color:var(--text-muted);">
-                                <i class="fa-regular fa-comment-dots" style="font-size:30px; margin-bottom:10px;"></i>
-                                <p>Belum ada ulasan untuk produk ini.</p>
-                            </div>
+                            <p style="color:var(--text-muted);">Belum ada ulasan.</p>
                         <% } %>
                     </div>
                 </div>
@@ -167,42 +125,17 @@
 
 <script>
     function handleBuy() {
+        // Cek jika variabel 'user' (dari EJS) ada atau tidak
         const isLoggedIn = !!<%- JSON.stringify(user) %>;
+
         if (isLoggedIn) {
-            if (confirm('Konfirmasi pembelian? Saldo anda akan terpotong sesuai harga yang tertera.')) {
+            if (confirm('Konfirmasi pembelian? Saldo akan terpotong.')) {
                 document.getElementById('buyForm').submit();
             }
         } else {
-            alert('Silakan login terlebih dahulu untuk melanjutkan pembelian.');
+            alert('Anda harus login terlebih dahulu untuk membeli produk.');
             window.location.href = '/auth/login';
         }
     }
-
-    async function translateContent(elementId, lang) {
-        const el = document.getElementById(elementId);
-        if(!el) return;
-        
-        const originalText = el.innerText;
-        el.style.opacity = '0.5';
-        
-        try {
-            const res = await fetch('/api/translate', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ text: originalText, targetLang: lang })
-            });
-            const data = await res.json();
-            if(data.translatedText) {
-                el.innerText = data.translatedText;
-                el.style.opacity = '1';
-                el.style.borderLeft = '3px solid var(--neon-blue)';
-                el.style.paddingLeft = '10px';
-            }
-        } catch(e) {
-            el.style.opacity = '1';
-            alert('Gagal menerjemahkan konten.');
-        }
-    }
 </script>
-
 <%- include('../partials/footer') %>
