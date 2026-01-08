@@ -73,7 +73,7 @@ router.get('/product/:slug', async (req, res) => {
             .populate('reviews.user', 'username profile_pic');
 
         if (!product) return res.redirect('/marketplace');
-
+        
         let hasBought = false;
         if (req.session.user) {
             const transaction = await Transaction.findOne({ 
@@ -83,42 +83,12 @@ router.get('/product/:slug', async (req, res) => {
             hasBought = !!transaction;
         }
 
-        const schema = {
-            "@context": "https://schema.org/",
-            "@type": "Product",
-            "name": product.name,
-            "image": product.image,
-            "description": product.description,
-            "sku": product._id,
-            "offers": {
-                "@type": "Offer",
-                "url": `https://api.wanzofc.site/marketplace/product/${product.slug}`,
-                "priceCurrency": "IDR",
-                "price": product.price,
-                "availability": "https://schema.org/InStock"
-            }
-        };
-
-        if (product.reviews.length > 0) {
-            schema.aggregateRating = {
-                "@type": "AggregateRating",
-                "ratingValue": product.averageRating.toFixed(1),
-                "reviewCount": product.reviews.length
-            };
-        }
-
-        res.locals.seo.title = `${product.name} - Jual Murah`;
-        res.locals.seo.description = product.description.substring(0, 150);
-        res.locals.seo.image = product.image;
-        res.locals.seo.type = 'product';
-        res.locals.seo.schema = schema;
-
         res.render('marketplace/detail', {
             title: product.name,
             css: 'dashboard.css',
             product,
-            hasBought,
-            user: req.session.user || null
+            hasBought: hasBought,
+            user: req.session.user || null // Kirim null jika belum login
         });
     } catch (err) {
         res.redirect('/marketplace');
