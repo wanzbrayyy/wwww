@@ -1,43 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const midtransClient = require('midtrans-client');
 const axios = require('axios');
 const User = require('../models/user');
-const Deposit = require('../models/deposit');
+const NokosOrder = require('../models/nokosOrder');
 
-const MIDTRANS_SERVER_KEY = 'Mid-server-zvgGUiY7SS-HS_qhWLkqZQuL';
-const MIDTRANS_CLIENT_KEY = 'Mid-client-IoIOg2RqJNZgKpY6';
-const RUMAHOTP_KEY = 'otp_IlsebAaegBpqltRs';
-const RUMAHOTP_API = 'https://www.rumahotp.com/api';
-
-const snap = new midtransClient.Snap({
-    isProduction: true,
-    serverKey: MIDTRANS_SERVER_KEY,
-    clientKey: MIDTRANS_CLIENT_KEY
-});
-
-const refreshUser = async (req, res, next) => {
-    if (req.session && req.session.user) {
-        try {
-            const userId = req.session.user.id || req.session.user._id;
-            const freshUser = await User.findById(userId);
-            if (freshUser) {
-                req.session.user = freshUser;
-                res.locals.user = freshUser;
-            } else {
-                req.session.user = null;
-                res.locals.user = null;
-            }
-        } catch (err) {
-            res.locals.user = null;
-        }
-    } else {
-        res.locals.user = null;
-    }
-    next();
-};
-
-router.use(refreshUser);
+const API_KEY = 'otp_IlsebAaegBpqltRs'; 
+const BASE_URL_V2 = 'https://www.rumahotp.com/api/v2';
+const BASE_URL_V1 = 'https://www.rumahotp.com/api/v1';
 
 const ensureAuthenticated = (req, res, next) => {
     if (req.session.user) return next();
@@ -46,114 +15,14 @@ const ensureAuthenticated = (req, res, next) => {
 
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
-        res.render('deposit/new', { 
-            title: 'Deposit Saldo', 
-            css: 'dashboard.css',
-            user: req.session.user,
-            clientKey: MIDTRANS_CLIENT_KEY
+        const response = await axios.get(`${BASE_URL_V2}/services`, {
+            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
         });
-    } catch (err) {
-        res.redirect('/dashboard');
-    }
-});
 
-router.post('/', ensureAuthenticated, async (req, res) => {
-    const { amount } = req.body;
-    const user = await User.findById(req.session.user.id);
-    const nominal = parseInt(amount);
-
-    if (nominal < 2000) {
-        req.flash('error_msg', 'Minimal deposit Rp 2.000');
-        return res.redirect('/deposit');
-    }
-
-    try {
-        if (nominal < 10000) {
-            const fee = 1000;
-            const amountWithFee = nominal + fee;
-
-            const response = await axios.get(`${RUMAHOTP_API}/v1/deposit/create?amount=${amountWithFee}&payment_id=qris`, {
-                headers: { 'x-apikey': RUMAHOTP_KEY, 'Accept': 'application/json' }
-            });
-
-            if (response.data.success) {
-                const data = response.data.data;
-                
-                await new Deposit({
-                    user: user._id,
-                    order_id: data.id,
-                    amount: nominal,
-                    status: 'Pending',
-                    payment_type: 'qris_rumahotp',
-                    qr_code: data.qr,
-                    expired_at: new Date(data.expired)
-                }).save();
-
-                return res.render('deposit/pay_rumahotp', {
-                    title: 'Pembayaran QRIS',
-                    css: 'dashboard.css',
-                    amount: data.currency.total,
-                    order_id: data.id,
-                    qr_image: data.qr,
-                    expired: new Date(data.expired),
-                    user: user
-                });
-            } else {
-                throw new Error('Gagal membuat QRIS RumahOTP');
-            }
-
-        } else {
-            const order_id = `DEP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-            const parameter = {
-                transaction_details: {
-                    order_id: order_id,
-                    gross_amount: nominal
-                },
-                customer_details: {
-                    first_name: user.username,
-                    email: user.email,
-                    phone: user.whatsapp
-                },
-                callbacks: {
-                    finish: `${process.env.BASE_URL || 'https://wanzofc.site'}/deposit/history`
-                }
-            };
-
-            const transaction = await snap.createTransaction(parameter);
-            
-            await new Deposit({
-                user: user._id,
-                order_id: order_id,
-                amount: nominal,
-                snap_token: transaction.token,
-                status: 'Pending',
-                payment_type: 'midtrans'
-            }).save();
-
-            return res.render('deposit/pay', {
-                title: 'Pembayaran Deposit',
-                css: 'dashboard.css',
-                snapToken: transaction.token,
-                clientKey: MIDTRANS_CLIENT_KEY,
-                amount: nominal,
-                order_id: order_id,
-                user: user
-            });
-        }
-
-    } catch (err) {
-        req.flash('error_msg', 'Gagal membuat transaksi: ' + err.message);
-        res.redirect('/deposit');
-    }
-});
-
-router.get('/history', ensureAuthenticated, async (req, res) => {
-    try {
-        const deposits = await Deposit.find({ user: req.session.user.id }).sort({ createdAt: -1 });
-        res.render('deposit/history', {
-            title: 'Riwayat Deposit',
+        res.render('nokos/index', {
+            title: 'Order Nomor Kosong',
             css: 'dashboard.css',
-            deposits: deposits,
+            services: response.data.data,
             user: req.session.user
         });
     } catch (err) {
@@ -161,47 +30,155 @@ router.get('/history', ensureAuthenticated, async (req, res) => {
     }
 });
 
-router.post('/check-status/:id', ensureAuthenticated, async (req, res) => {
+router.get('/api/countries', ensureAuthenticated, async (req, res) => {
     try {
-        const deposit = await Deposit.findOne({ order_id: req.params.id, user: req.session.user.id });
-        if (!deposit) return res.json({ success: false });
+        const { service_id } = req.query;
+        const response = await axios.get(`${BASE_URL_V2}/countries?service_id=${service_id}`, {
+            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
+        });
+        res.json(response.data);
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+});
 
-        const response = await axios.get(`${RUMAHOTP_API}/v2/deposit/get_status?deposit_id=${deposit.order_id}`, {
-            headers: { 'x-apikey': RUMAHOTP_KEY, 'Accept': 'application/json' }
+router.get('/api/operators', ensureAuthenticated, async (req, res) => {
+    try {
+        const { country, provider_id } = req.query;
+        const encodedCountry = encodeURIComponent(country);
+        const response = await axios.get(`${BASE_URL_V2}/operators?country=${encodedCountry}&provider_id=${provider_id}`, {
+            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
+        });
+        res.json(response.data);
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post('/order', ensureAuthenticated, async (req, res) => {
+    const { number_id, provider_id, operator_id, price } = req.body;
+    
+    try {
+        const user = await User.findById(req.session.user.id);
+        const orderPrice = parseInt(price);
+
+        if (user.balance < orderPrice) {
+            req.flash('error_msg', 'Saldo tidak mencukupi');
+            return res.redirect('/deposit');
+        }
+
+        const response = await axios.get(`${BASE_URL_V2}/orders?number_id=${number_id}&provider_id=${provider_id}&operator_id=${operator_id}`, {
+            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
         });
 
         if (response.data.success) {
-            const status = response.data.data.status;
-            if (status === 'success' && deposit.status !== 'Success') {
-                deposit.status = 'Success';
-                deposit.payment_time = new Date();
-                await deposit.save();
-                await processSuccessDeposit(deposit.user, deposit.amount);
-                return res.json({ success: true, status: 'Success' });
-            } else if (status === 'cancel' || status === 'expired') {
-                deposit.status = 'Failed';
-                await deposit.save();
-                return res.json({ success: true, status: 'Failed' });
-            }
+            const data = response.data.data;
+            
+            user.balance -= orderPrice;
+            user.monthlySpend = (user.monthlySpend || 0) + orderPrice;
+            await user.save();
+            
+            req.session.user.balance = user.balance;
+
+            const expires = new Date();
+            expires.setMinutes(expires.getMinutes() + data.expires_in_minute);
+
+            await new NokosOrder({
+                user: user._id,
+                order_id: data.order_id,
+                service_name: data.service,
+                country_name: data.country,
+                phone_number: data.phone_number,
+                price: orderPrice,
+                provider_id: provider_id,
+                expires_at: expires
+            }).save();
+
+            req.flash('success_msg', 'Nomor berhasil dipesan! Menunggu SMS...');
+            res.redirect('/nokos/history');
+        } else {
+            req.flash('error_msg', 'Gagal memesan nomor. Coba negara/server lain.');
+            res.redirect('/nokos');
         }
-        res.json({ success: true, status: deposit.status });
+
+    } catch (err) {
+        req.flash('error_msg', 'Terjadi kesalahan sistem');
+        res.redirect('/nokos');
+    }
+});
+
+router.get('/history', ensureAuthenticated, async (req, res) => {
+    try {
+        const orders = await NokosOrder.find({ user: req.session.user.id }).sort({ createdAt: -1 });
+        res.render('nokos/history', {
+            title: 'Riwayat Nokos',
+            css: 'dashboard.css',
+            orders: orders,
+            user: req.session.user
+        });
+    } catch (err) {
+        res.redirect('/dashboard');
+    }
+});
+
+router.post('/check-status', ensureAuthenticated, async (req, res) => {
+    const { order_id } = req.body;
+    try {
+        const order = await NokosOrder.findOne({ order_id: order_id, user: req.session.user.id });
+        if (!order) return res.json({ success: false });
+
+        const response = await axios.get(`${BASE_URL_V1}/orders/get_status?order_id=${order_id}`, {
+            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
+        });
+
+        if (response.data.success) {
+            const data = response.data.data;
+            
+            if (data.status !== order.status || data.otp_code !== order.otp_code) {
+                order.status = data.status;
+                order.otp_code = data.otp_code;
+                
+                if (data.status === 'canceled') {
+                    const user = await User.findById(order.user);
+                    user.balance += order.price; 
+                    await user.save();
+                    req.session.user.balance = user.balance;
+                }
+                
+                await order.save();
+            }
+            return res.json({ success: true, data: data });
+        }
+        res.json({ success: false });
     } catch (err) {
         res.json({ success: false });
     }
 });
 
-router.post('/cancel/:id', ensureAuthenticated, async (req, res) => {
+router.post('/set-status', ensureAuthenticated, async (req, res) => {
+    const { order_id, status } = req.body; 
     try {
-        const deposit = await Deposit.findOne({ order_id: req.params.id, user: req.session.user.id });
-        if (!deposit || deposit.status !== 'Pending') return res.json({ success: false });
-
-        const response = await axios.get(`${RUMAHOTP_API}/v1/deposit/cancel?deposit_id=${deposit.order_id}`, {
-            headers: { 'x-apikey': RUMAHOTP_KEY, 'Accept': 'application/json' }
+        const response = await axios.get(`${BASE_URL_V1}/orders/set_status?order_id=${order_id}&status=${status}`, {
+            headers: { 'x-apikey': API_KEY, 'Accept': 'application/json' }
         });
 
         if (response.data.success) {
-            deposit.status = 'Failed';
-            await deposit.save();
+            const order = await NokosOrder.findOne({ order_id: order_id });
+            
+            if (status === 'cancel' && order.status !== 'canceled') {
+                order.status = 'canceled';
+                const user = await User.findById(order.user);
+                user.balance += order.price;
+                await user.save();
+                req.session.user.balance = user.balance;
+                await order.save();
+            }
+            
+            if (status === 'done') {
+                order.status = 'completed';
+                await order.save();
+            }
+            
             return res.json({ success: true });
         }
         res.json({ success: false });
@@ -209,67 +186,5 @@ router.post('/cancel/:id', ensureAuthenticated, async (req, res) => {
         res.json({ success: false });
     }
 });
-
-router.post('/notification', async (req, res) => {
-    try {
-        const statusResponse = await snap.transaction.notification(req.body);
-        const orderId = statusResponse.order_id;
-        const transactionStatus = statusResponse.transaction_status;
-        const fraudStatus = statusResponse.fraud_status;
-
-        const deposit = await Deposit.findOne({ order_id: orderId });
-        if (!deposit) return res.status(404).send('Deposit not found');
-        if (deposit.status === 'Success') return res.status(200).send('Already processed');
-
-        let newStatus = 'Pending';
-
-        if (transactionStatus == 'capture') {
-            if (fraudStatus == 'challenge') newStatus = 'Pending';
-            else if (fraudStatus == 'accept') newStatus = 'Success';
-        } else if (transactionStatus == 'settlement') {
-            newStatus = 'Success';
-        } else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
-            newStatus = 'Failed';
-        } else if (transactionStatus == 'pending') {
-            newStatus = 'Pending';
-        }
-
-        deposit.status = newStatus;
-        deposit.payment_type = statusResponse.payment_type;
-        deposit.payment_time = new Date();
-        await deposit.save();
-
-        if (newStatus === 'Success') {
-            await processSuccessDeposit(deposit.user, deposit.amount);
-        }
-
-        res.status(200).send('OK');
-    } catch (err) {
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-async function processSuccessDeposit(userId, amount) {
-    const user = await User.findById(userId);
-    if (!user) return;
-
-    user.balance += amount;
-    user.totalDeposit = (user.totalDeposit || 0) + amount;
-
-    if (user.totalDeposit >= 5000000) user.rank = 'Gold';
-    else if (user.totalDeposit >= 1000000) user.rank = 'Silver';
-    
-    if (user.referredBy) {
-        const upline = await User.findOne({ referralCode: user.referredBy });
-        if (upline) {
-            const commission = amount * 0.05; 
-            upline.balance += commission;
-            upline.referralEarnings = (upline.referralEarnings || 0) + commission;
-            await upline.save();
-        }
-    }
-
-    await user.save();
-}
 
 module.exports = router;
