@@ -1,0 +1,501 @@
+<%- include('../partials/header') %>
+
+<style>
+    .custom-select-trigger {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        padding: 14px 15px;
+        border-radius: 12px;
+        color: var(--text-main);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: 0.3s;
+        user-select: none;
+        font-size: 14px;
+    }
+    .custom-select-trigger:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--neon-blue);
+    }
+    .custom-select-trigger.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #0f172a;
+        border-color: var(--glass-border);
+    }
+    
+    .selection-modal {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(8px);
+    }
+    .selection-modal.active {
+        display: flex;
+        animation: fadeIn 0.2s ease;
+    }
+    .modal-content {
+        background: #1e293b;
+        width: 90%;
+        max-width: 450px;
+        max-height: 75vh;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        animation: slideUp 0.3s ease;
+    }
+    .modal-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: rgba(15, 23, 42, 0.5);
+    }
+    .search-input {
+        width: 100%;
+        background: #0f172a;
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 12px 15px;
+        border-radius: 10px;
+        color: white;
+        outline: none;
+        font-size: 14px;
+    }
+    .search-input:focus {
+        border-color: var(--neon-blue);
+    }
+    .modal-body {
+        overflow-y: auto;
+        padding: 10px;
+        flex: 1;
+    }
+    .modal-body::-webkit-scrollbar { width: 5px; }
+    .modal-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+    .select-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        cursor: pointer;
+        transition: 0.2s;
+        border-radius: 10px;
+        margin-bottom: 5px;
+    }
+    .select-item:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+    .select-item img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+    .item-info { flex: 1; }
+    .item-title { font-weight: 600; font-size: 14px; color: white; }
+    .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .item-price { color: #34d399; font-weight: bold; font-size: 14px; font-family: monospace; }
+    
+    .close-modal {
+        background: none;
+        border: none;
+        color: #ef4444;
+        font-size: 22px;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .price-summary-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px dashed var(--neon-blue);
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-top: 25px;
+        margin-bottom: 10px;
+        display: none;
+        justify-content: space-between;
+        align-items: center;
+        animation: slideUp 0.3s ease;
+    }
+    .price-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .price-amount {
+        font-size: 20px;
+        font-weight: 700;
+        color: #34d399;
+        text-shadow: 0 0 10px rgba(52, 211, 153, 0.2);
+        font-family: monospace;
+    }
+
+    .btn-deposit {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+    .btn-deposit:hover {
+        transform: translateY(-2px);
+    }
+
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb"><h2>Order Nomor Kosong</h2></div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-body">
+                <form action="/nokos/order" method="POST" id="nokosForm">
+                    
+                    <div class="form-group">
+                        <label>1. Pilih Aplikasi</label>
+                        <div class="custom-select-trigger" id="triggerService" onclick="openModal('service')">
+                            <span id="labelService">-- Pilih Aplikasi --</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>2. Pilih Negara</label>
+                        <div class="custom-select-trigger disabled" id="triggerCountry">
+                            <span id="labelCountry">-- Pilih Negara --</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>3. Pilih Server & Harga</label>
+                        <div class="custom-select-trigger disabled" id="triggerProvider">
+                            <span id="labelProvider">-- Pilih Server --</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>4. Pilih Operator</label>
+                        <div class="custom-select-trigger disabled" id="triggerOperator">
+                            <span id="labelOperator">-- Pilih Operator --</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="number_id" id="numberId">
+                    <input type="hidden" name="provider_id" id="providerId">
+                    <input type="hidden" name="operator_id" id="operatorId">
+                    <input type="hidden" name="price" id="priceInput">
+
+                    <div id="priceDisplay" class="price-summary-card">
+                        <span class="price-label">Total Bayar</span>
+                        <span id="priceText" class="price-amount">Rp 0</span>
+                    </div>
+
+                    <div id="balanceAlert" class="alert alert-danger" style="display:none; margin-top:15px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.1); color:#fca5a5;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Saldo kurang <strong><span id="deficitAmount"></span></strong>. Silakan deposit.</span>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="btnSubmit" style="margin-top:10px; width:100%; padding:15px; font-size:16px;" disabled>
+                        <i class="fa-solid fa-cart-shopping"></i> Beli Nomor Sekarang
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="selection-modal" id="selectionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <input type="text" class="search-input" id="modalSearch" placeholder="Cari disini..." onkeyup="filterItems()">
+            <button class="close-modal" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="modalList"></div>
+    </div>
+</div>
+
+<script>
+    const servicesRaw = <%- JSON.stringify(services) %>;
+    const userBalance = <%= user.balance || 0 %>;
+    
+    let currentCountries = [];
+    let currentProviders = [];
+    let currentOperators = [];
+    let activeModalType = ''; 
+    let selectedCountryName = ''; 
+
+    const els = {
+        triggerService: document.getElementById('triggerService'),
+        triggerCountry: document.getElementById('triggerCountry'),
+        triggerProvider: document.getElementById('triggerProvider'),
+        triggerOperator: document.getElementById('triggerOperator'),
+        labelService: document.getElementById('labelService'),
+        labelCountry: document.getElementById('labelCountry'),
+        labelProvider: document.getElementById('labelProvider'),
+        labelOperator: document.getElementById('labelOperator'),
+        modal: document.getElementById('selectionModal'),
+        modalList: document.getElementById('modalList'),
+        modalSearch: document.getElementById('modalSearch'),
+        inpNumberId: document.getElementById('numberId'),
+        inpProviderId: document.getElementById('providerId'),
+        inpOperatorId: document.getElementById('operatorId'),
+        inpPrice: document.getElementById('priceInput'),
+        priceDisplay: document.getElementById('priceDisplay'),
+        priceText: document.getElementById('priceText'),
+        btnSubmit: document.getElementById('btnSubmit'),
+        balanceAlert: document.getElementById('balanceAlert'),
+        deficitAmount: document.getElementById('deficitAmount')
+    };
+
+    function openModal(type) {
+        if (type === 'country' && els.triggerCountry.classList.contains('disabled')) return;
+        if (type === 'provider' && els.triggerProvider.classList.contains('disabled')) return;
+        if (type === 'operator' && els.triggerOperator.classList.contains('disabled')) return;
+
+        activeModalType = type;
+        els.modalSearch.value = '';
+        els.modalList.innerHTML = '';
+        els.modal.classList.add('active');
+        els.modalSearch.focus();
+
+        renderItems();
+    }
+
+    function closeModal() {
+        els.modal.classList.remove('active');
+    }
+
+    function renderItems() {
+        let html = '';
+        const filter = els.modalSearch.value.toLowerCase();
+
+        if (activeModalType === 'service') {
+            servicesRaw.filter(s => s.service_name.toLowerCase().includes(filter)).forEach(s => {
+                html += `
+                    <div class="select-item" onclick="selectService('${s.service_code}', '${s.service_name}')">
+                        <img src="${s.service_img || 'https://via.placeholder.com/30'}" onerror="this.src='https://via.placeholder.com/30'">
+                        <div class="item-info">
+                            <div class="item-title">${s.service_name}</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-muted"></i>
+                    </div>
+                `;
+            });
+        } 
+        else if (activeModalType === 'country') {
+            currentCountries.filter(c => c.name.toLowerCase().includes(filter)).forEach((c, idx) => {
+                html += `
+                    <div class="select-item" onclick="selectCountry(${idx})">
+                        <img src="${c.img}" onerror="this.src='https://via.placeholder.com/30'">
+                        <div class="item-info">
+                            <div class="item-title">${c.name}</div>
+                            <div class="item-sub">Prefix: ${c.prefix} • Stok: ${c.stock_total}</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-muted"></i>
+                    </div>
+                `;
+            });
+        }
+        else if (activeModalType === 'provider') {
+            currentProviders.filter(p => p.price_format.toLowerCase().includes(filter)).forEach((p, idx) => {
+                html += `
+                    <div class="select-item" onclick="selectProvider(${idx})">
+                        <div class="item-info">
+                            <div class="item-title">Server ${p.server_id}</div>
+                            <div class="item-sub">Stok: ${p.stock} • Rate: ${p.rate}%</div>
+                        </div>
+                        <div class="item-price">${p.price_format}</div>
+                    </div>
+                `;
+            });
+        }
+        else if (activeModalType === 'operator') {
+            currentOperators.filter(o => o.name.toLowerCase().includes(filter)).forEach(o => {
+                html += `
+                    <div class="select-item" onclick="selectOperator('${o.id}', '${o.name}')">
+                        <img src="${o.image}" onerror="this.src='https://via.placeholder.com/30'">
+                        <div class="item-info">
+                            <div class="item-title">${o.name}</div>
+                        </div>
+                        <i class="fa-solid fa-check text-success" style="opacity:0.5"></i>
+                    </div>
+                `;
+            });
+        }
+
+        if(html === '') html = '<div style="text-align:center; padding:30px; color:gray;"><i class="fa-solid fa-circle-exclamation fa-2x mb-2"></i><br>Tidak ditemukan.</div>';
+        els.modalList.innerHTML = html;
+    }
+
+    function filterItems() {
+        renderItems();
+    }
+
+    async function selectService(id, name) {
+        closeModal();
+        els.labelService.innerHTML = `<span style="color:#34d399; font-weight:600;">${name}</span>`;
+        
+        resetSteps(['country', 'provider', 'operator']);
+        els.triggerCountry.classList.add('disabled');
+        els.labelCountry.innerText = 'Loading...';
+
+        try {
+            const res = await fetch(`/nokos/api/countries?service_id=${id}`);
+            const json = await res.json();
+            if (json.success || json.status) {
+                currentCountries = json.data;
+                els.triggerCountry.classList.remove('disabled');
+                els.triggerCountry.onclick = () => openModal('country');
+                els.labelCountry.innerText = '-- Pilih Negara --';
+            } else {
+                els.labelCountry.innerText = 'Gagal memuat negara.';
+            }
+        } catch (e) {
+            els.labelCountry.innerText = 'Error koneksi.';
+        }
+    }
+
+    function selectCountry(idx) {
+        closeModal();
+        const data = currentCountries[idx];
+        selectedCountryName = data.name; 
+
+        els.inpNumberId.value = data.number_id;
+        els.labelCountry.innerHTML = `<img src="${data.img}" style="width:20px;vertical-align:middle;margin-right:8px;"> ${data.name}`;
+
+        resetSteps(['provider', 'operator']);
+        
+        currentProviders = data.pricelist.filter(p => p.available && p.stock > 0);
+        
+        if (currentProviders.length > 0) {
+            els.triggerProvider.classList.remove('disabled');
+            els.triggerProvider.onclick = () => openModal('provider');
+            els.labelProvider.innerText = '-- Pilih Server --';
+        } else {
+            els.labelProvider.innerText = 'Stok Habis';
+            els.triggerProvider.classList.add('disabled');
+        }
+    }
+
+    async function selectProvider(idx) {
+        closeModal();
+        const data = currentProviders[idx];
+        const price = data.price;
+
+        els.inpProviderId.value = data.provider_id;
+        els.inpPrice.value = price;
+        els.labelProvider.innerHTML = `Server ${data.server_id} - <span style="color:#34d399; font-weight:bold;">${data.price_format}</span>`;
+        
+        els.priceText.innerText = data.price_format;
+        els.priceDisplay.style.display = 'flex';
+
+        checkBalance(price);
+
+        resetSteps(['operator']);
+        els.triggerOperator.classList.add('disabled');
+        els.labelOperator.innerText = 'Loading...';
+
+        try {
+            const res = await fetch(`/nokos/api/operators?country=${encodeURIComponent(selectedCountryName)}&provider_id=${data.provider_id}`);
+            const json = await res.json();
+            if (json.success || json.status) {
+                currentOperators = json.data;
+                els.triggerOperator.classList.remove('disabled');
+                els.triggerOperator.onclick = () => openModal('operator');
+                els.labelOperator.innerText = '-- Pilih Operator --';
+            } else {
+                els.labelOperator.innerText = 'Operator tidak tersedia';
+            }
+        } catch (e) {
+            els.labelOperator.innerText = 'Error Operator';
+        }
+    }
+
+    function selectOperator(id, name) {
+        closeModal();
+        els.inpOperatorId.value = id;
+        els.labelOperator.innerHTML = `<span style="color:white; font-weight:600;">${name}</span>`;
+        
+        const price = parseInt(els.inpPrice.value);
+        if (userBalance >= price) {
+            els.btnSubmit.disabled = false;
+        }
+    }
+
+    function checkBalance(price) {
+        if (price > userBalance) {
+            const deficit = price - userBalance;
+            els.balanceAlert.style.display = 'flex';
+            els.deficitAmount.innerText = 'Rp ' + deficit.toLocaleString('id-ID');
+            
+            els.btnSubmit.innerHTML = '<i class="fa-solid fa-wallet"></i> Saldo Kurang - Isi Deposit';
+            els.btnSubmit.classList.add('btn-deposit');
+            els.btnSubmit.disabled = false; 
+            
+            els.btnSubmit.onclick = function(e) {
+                e.preventDefault();
+                window.location.href = '/deposit';
+            };
+        } else {
+            els.balanceAlert.style.display = 'none';
+            els.btnSubmit.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Beli Nomor Sekarang';
+            els.btnSubmit.classList.remove('btn-deposit');
+            els.btnSubmit.onclick = null; 
+            els.btnSubmit.disabled = true; 
+        }
+    }
+
+    function resetSteps(steps) {
+        if (steps.includes('country')) {
+            els.labelCountry.innerText = '-- Pilih Negara --';
+            els.triggerCountry.classList.add('disabled');
+            els.inpNumberId.value = '';
+            selectedCountryName = '';
+        }
+        if (steps.includes('provider')) {
+            els.labelProvider.innerText = '-- Pilih Server --';
+            els.triggerProvider.classList.add('disabled');
+            els.inpProviderId.value = '';
+            els.inpPrice.value = '';
+            els.priceDisplay.style.display = 'none';
+            els.balanceAlert.style.display = 'none';
+        }
+        if (steps.includes('operator')) {
+            els.labelOperator.innerText = '-- Pilih Operator --';
+            els.triggerOperator.classList.add('disabled');
+            els.inpOperatorId.value = '';
+            els.btnSubmit.disabled = true;
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target == els.modal) {
+            closeModal();
+        }
+    }
+</script>
+
+<%- include('../partials/footer') %>

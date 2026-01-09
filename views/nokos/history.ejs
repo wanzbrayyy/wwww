@@ -1,0 +1,183 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumb"><h2>Riwayat Nokos</h2></div>
+            </div>
+            <div class="header-right">
+                <a href="/nokos" class="btn-primary" style="padding: 8px 15px; font-size: 14px;">Order Baru</a>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID Order</th>
+                                <th>Layanan</th>
+                                <th>Nomor HP</th>
+                                <th>Kode OTP</th>
+                                <th>Sisa Waktu</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (orders.length > 0) { %>
+                                <% orders.forEach(order => { %>
+                                    <tr>
+                                        <td>#<%= order.order_id %></td>
+                                        <td>
+                                            <div style="font-weight:bold;"><%= order.service_name %></div>
+                                            <small class="text-muted"><%= order.country_name %></small>
+                                        </td>
+                                        <td style="font-family:monospace; font-size:14px; color:var(--neon-blue);">
+                                            <%= order.phone_number %>
+                                        </td>
+                                        <td>
+                                            <span id="otp-<%= order.order_id %>" style="font-weight:bold; font-size:16px; letter-spacing:2px; color:<%= order.otp_code !== '-' ? '#34d399' : '#94a3b8' %>;">
+                                                <%= order.otp_code %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% if (order.status === 'waiting' || order.status === 'received') { %>
+                                                <span class="countdown" data-expire="<%= order.expires_at %>">--:--</span>
+                                            <% } else { %>
+                                                -
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span id="status-<%= order.order_id %>" class="badge bg-<%= order.status === 'completed' ? 'success' : (order.status === 'canceled' ? 'danger' : 'warning') %>">
+                                                <%= order.status.toUpperCase() %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% if (order.status === 'waiting') { %>
+                                                <div style="display:flex; gap:5px;">
+                                                    <button onclick="checkStatus('<%= order.order_id %>')" class="btn-sm btn-info" title="Refresh SMS"><i class="fa-solid fa-sync"></i></button>
+                                                    <button onclick="cancelOrder('<%= order.order_id %>')" class="btn-sm btn-danger" title="Batalkan"><i class="fa-solid fa-times"></i></button>
+                                                </div>
+                                            <% } else if (order.status === 'received') { %>
+                                                <button onclick="setDone('<%= order.order_id %>')" class="btn-sm btn-success">Selesai</button>
+                                            <% } else { %>
+                                                <i class="fa-solid fa-check text-muted"></i>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="7" class="text-center">Belum ada riwayat pesanan.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function startTimers() {
+        const timers = document.querySelectorAll('.countdown');
+        timers.forEach(timer => {
+            const expireTime = new Date(timer.dataset.expire).getTime();
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = expireTime - now;
+
+                if (distance < 0) {
+                    clearInterval(interval);
+                    timer.innerHTML = "Expired";
+                } else {
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    timer.innerHTML = minutes + "m " + seconds + "s";
+                }
+            }, 1000);
+        });
+    }
+    startTimers();
+
+    async function checkStatus(orderId) {
+        const btn = event.currentTarget;
+        const icon = btn.querySelector('i');
+        icon.classList.add('fa-spin');
+
+        try {
+            const res = await fetch('/nokos/check-status', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ order_id: orderId })
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                const data = json.data;
+                const otpEl = document.getElementById(`otp-${orderId}`);
+                const statusEl = document.getElementById(`status-${orderId}`);
+                
+                if (data.otp_code && data.otp_code !== '-') {
+                    otpEl.innerText = data.otp_code;
+                    otpEl.style.color = '#34d399';
+                }
+                
+                if (data.status) {
+                    statusEl.innerText = data.status.toUpperCase();
+                    if(data.status === 'canceled') {
+                        statusEl.className = 'badge bg-danger';
+                        location.reload(); 
+                    } else if (data.status === 'completed') {
+                        statusEl.className = 'badge bg-success';
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            icon.classList.remove('fa-spin');
+        }
+    }
+
+    async function cancelOrder(orderId) {
+        if (!confirm('Batalkan pesanan ini? Saldo akan dikembalikan.')) return;
+
+        try {
+            const res = await fetch('/nokos/set-status', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ order_id: orderId, status: 'cancel' })
+            });
+            const json = await res.json();
+            if (json.success) {
+                alert('Pesanan dibatalkan.');
+                location.reload();
+            } else {
+                alert('Gagal membatalkan pesanan.');
+            }
+        } catch (e) {
+            alert('Error connect to server');
+        }
+    }
+
+    async function setDone(orderId) {
+        try {
+            const res = await fetch('/nokos/set-status', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ order_id: orderId, status: 'done' })
+            });
+            location.reload();
+        } catch(e) {}
+    }
+</script>
+
+<%- include('../partials/footer') %>
