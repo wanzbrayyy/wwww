@@ -1,81 +1,119 @@
 <%- include('../partials/header') %>
 
 <div class="dashboard-wrapper">
-    <!-- HANYA TAMPILKAN NAVBAR JIKA USER SUDAH LOGIN -->
     <% if (user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <!-- Ubah margin agar full width jika belum login -->
     <main class="main-content" style="<%= user ? '' : 'margin-left:0; width:100%;' %>">
         <header class="top-header">
             <div style="display:flex; align-items:center;">
-                <!-- Hamburger hanya muncul jika login -->
                 <% if (user) { %>
                     <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
                 <% } %>
                 <div class="breadcrumb">
                     <h2>Marketplace</h2>
-                    <span>Jual beli produk digital terpercaya</span>
                 </div>
             </div>
 
-            <!-- Tampilkan saldo jika login, atau tombol login jika belum -->
             <% if (user) { %>
                 <div class="balance-card">
                     Rp <%= (user.balance || 0).toLocaleString('id-ID') %>
                 </div>
             <% } else { %>
                 <div>
-                    <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px; background:transparent; border:1px solid var(--glass-border); color:var(--text-main);">Login</a>
+                    <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px; background:transparent; border:1px solid var(--glass-border);">Login</a>
                     <a href="/auth/register" class="btn-primary" style="width:auto; padding:8px 15px;">Daftar</a>
                 </div>
             <% } %>
         </header>
 
-        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-            <!-- Tombol "Jual Produk" hanya untuk Seller/Admin yang sedang login -->
-            <% if(user && (user.role === 'seller' || user.role === 'admin')) { %>
-                <a href="/marketplace/add" class="btn-primary" style="width:auto; display:inline-block; padding: 10px 20px;">
-                    <i class="fa-solid fa-plus-circle"></i> Jual Produk Baru
-                </a>
-            <% } %>
+        <div style="margin-bottom:20px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                <% if(user && (user.role === 'seller' || user.role === 'admin')) { %>
+                    <a href="/marketplace/add" class="btn-primary" style="width:auto; padding:10px 20px;">
+                        <i class="fa-solid fa-plus-circle"></i> Jual Produk
+                    </a>
+                <% } %>
+                
+                <form action="/marketplace" method="GET" style="display:flex; gap:10px; flex:1; flex-wrap:wrap;">
+                    <input type="text" name="search" class="form-control" placeholder="Cari produk..." style="min-width:200px; flex:1;" value="<%= query.search || '' %>">
+                    
+                    <select name="category" class="form-control" style="width:150px;">
+                        <option value="">Semua Kategori</option>
+                        <option value="script" <%= query.category == 'script' ? 'selected' : '' %>>Script</option>
+                        <option value="account" <%= query.category == 'account' ? 'selected' : '' %>>Akun Premium</option>
+                        <option value="tutorial" <%= query.category == 'tutorial' ? 'selected' : '' %>>E-Course</option>
+                        <option value="tools" <%= query.category == 'tools' ? 'selected' : '' %>>Tools</option>
+                        <option value="design" <%= query.category == 'design' ? 'selected' : '' %>>Design</option>
+                        <option value="game" <%= query.category == 'game' ? 'selected' : '' %>>Topup</option>
+                    </select>
+
+                    <select name="sort" class="form-control" style="width:150px;" onchange="this.form.submit()">
+                        <option value="newest" <%= query.sort == 'newest' ? 'selected' : '' %>>Terbaru</option>
+                        <option value="bestseller" <%= query.sort == 'bestseller' ? 'selected' : '' %>>Terlaris</option>
+                        <option value="views" <%= query.sort == 'views' ? 'selected' : '' %>>Populer</option>
+                        <option value="price_low" <%= query.sort == 'price_low' ? 'selected' : '' %>>Harga Terendah</option>
+                        <option value="price_high" <%= query.sort == 'price_high' ? 'selected' : '' %>>Harga Tertinggi</option>
+                    </select>
+                </form>
+            </div>
             
-            <form action="/marketplace" method="GET" style="display:flex; gap:10px; flex:1; justify-content:flex-end;">
-                <input type="text" name="search" class="form-control" placeholder="Cari produk..." style="width:200px; margin:0;" value="<%= query.search || '' %>">
-                <select name="sort" class="form-control" style="width:150px; margin:0;" onchange="this.form.submit()">
-                    <option value="newest" <%= query.sort == 'newest' ? 'selected' : '' %>>Terbaru</option>
-                    <option value="bestseller" <%= query.sort == 'bestseller' ? 'selected' : '' %>>Terlaris</option>
-                    <option value="price_low" <%= query.sort == 'price_low' ? 'selected' : '' %>>Harga Terendah</option>
-                    <option value="price_high" <%= query.sort == 'price_high' ? 'selected' : '' %>>Harga Tertinggi</option>
-                </select>
-            </form>
+            <% if(query.search || query.category) { %>
+                <div style="font-size:14px; color:var(--text-muted); margin-bottom:10px;">
+                    Menampilkan hasil untuk pencarian aktif. <a href="/marketplace" style="color:var(--neon-blue)">Reset Filter</a>
+                </div>
+            <% } %>
         </div>
 
         <div class="mp-grid">
             <% if(products.length > 0) { %>
                 <% products.forEach(prod => { %>
-                    <div class="mp-card" style="cursor: pointer;" onclick="window.location.href='/marketplace/product/<%= prod.slug %>'">
-                        <div style="position: relative; overflow: hidden;">
-                            <img src="<%= prod.image %>" class="mp-img">
-                            <span class="badge bg-secondary" style="position: absolute; top: 10px; right: 10px; opacity: 0.9;">
+                    <div class="mp-card" onclick="window.location.href='/marketplace/product/<%= prod.slug %>'">
+                        <div style="position: relative; overflow: hidden; aspect-ratio: 16/9;">
+                            <img src="<%= prod.image %>" class="mp-img" loading="lazy">
+                            
+                            <span class="badge" style="position: absolute; top: 10px; right: 10px; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);">
                                 <%= prod.category.toUpperCase() %>
                             </span>
+
+                            <% if(prod.stock <= 0) { %>
+                                <div style="position:absolute; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:18px;">
+                                    SOLD OUT
+                                </div>
+                            <% } else if (prod.flashSaleEnd > new Date() && prod.flashSaleStart < new Date() && prod.flashSalePrice > 0) { %>
+                                <div style="position:absolute; top:10px; left:10px; background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:bold; animation: pulse 2s infinite;">
+                                    <i class="fa-solid fa-bolt"></i> FLASH SALE
+                                </div>
+                            <% } %>
                         </div>
+
                         <div class="mp-details">
                             <div class="mp-title"><%= prod.name %></div>
-                            <span class="mp-price">Rp <%= prod.price.toLocaleString('id-ID') %></span>
                             
-                            <div class="mp-seller" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--glass-border);">
-                                <div style="display:flex; align-items:center; gap:5px;">
-                                    <i class="fa-solid fa-store text-primary"></i> 
-                                    <span><%= prod.seller.username %></span>
+                            <div style="display:flex; align-items:flex-end; gap:8px; margin-bottom:10px;">
+                                <% if(prod.flashSaleEnd > new Date() && prod.flashSaleStart < new Date() && prod.flashSalePrice > 0) { %>
+                                    <span class="mp-price" style="color:#ef4444;">Rp <%= prod.flashSalePrice.toLocaleString('id-ID') %></span>
+                                    <small style="text-decoration:line-through; color:var(--text-muted); font-size:11px;">Rp <%= prod.price.toLocaleString('id-ID') %></small>
+                                <% } else { %>
+                                    <span class="mp-price">Rp <%= prod.price.toLocaleString('id-ID') %></span>
+                                <% } %>
+                            </div>
+                            
+                            <div class="mp-seller" style="margin-top:auto; padding-top:10px; border-top:1px solid var(--glass-border);">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <% if(prod.seller.isVerified) { %>
+                                        <i class="fa-solid fa-circle-check text-info" style="font-size:12px;"></i>
+                                    <% } else { %>
+                                        <i class="fa-solid fa-store text-primary" style="font-size:12px;"></i> 
+                                    <% } %>
+                                    <span style="font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80px;"><%= prod.seller.username %></span>
                                 </div>
-                                <div style="margin-left:auto; display:flex; gap:10px;">
-                                    <span style="color:var(--text-muted); font-size:11px;">
+                                <div style="margin-left:auto; display:flex; gap:8px;">
+                                    <span style="color:var(--text-muted); font-size:11px;" title="Terjual">
                                         <i class="fa-solid fa-bag-shopping"></i> <%= prod.sold %>
                                     </span>
-                                    <span style="color:#fbbf24; font-size:11px;">
+                                    <span style="color:#fbbf24; font-size:11px;" title="Rating">
                                         <i class="fa-solid fa-star"></i> <%= prod.averageRating.toFixed(1) %>
                                     </span>
                                 </div>
@@ -84,13 +122,38 @@
                     </div>
                 <% }) %>
             <% } else { %>
-                <div style="grid-column: 1/-1; text-align:center; padding:50px; color:var(--text-muted); background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
-                    <i class="fa-solid fa-box-open" style="font-size:40px; margin-bottom:15px; color: var(--neon-blue);"></i>
-                    <p>Belum ada produk yang tersedia saat ini.</p>
+                <div style="grid-column: 1/-1; text-align:center; padding:60px 20px; color:var(--text-muted); background:var(--glass-bg); border-radius:12px; border:1px solid var(--glass-border);">
+                    <i class="fa-solid fa-box-open" style="font-size:48px; margin-bottom:15px; color:var(--neon-blue); opacity:0.5;"></i>
+                    <p style="font-size:16px;">Produk tidak ditemukan.</p>
+                    <a href="/marketplace" class="btn-primary" style="width:auto; display:inline-block; margin-top:10px;">Lihat Semua Produk</a>
                 </div>
             <% } %>
         </div>
+
+        <% if (pagination.pages > 1) { %>
+            <div style="display:flex; justify-content:center; gap:10px; margin-top:30px;">
+                <% if (pagination.current > 1) { %>
+                    <a href="/marketplace?page=<%= pagination.current - 1 %>&<%= new URLSearchParams({...query, page: undefined}).toString() %>" class="btn-primary" style="width:auto; padding:8px 15px;">&laquo; Prev</a>
+                <% } %>
+                
+                <span style="padding:8px 15px; background:var(--glass-bg); border-radius:6px; border:1px solid var(--glass-border);">
+                    Page <%= pagination.current %> of <%= pagination.pages %>
+                </span>
+
+                <% if (pagination.current < pagination.pages) { %>
+                    <a href="/marketplace?page=<%= pagination.current + 1 %>&<%= new URLSearchParams({...query, page: undefined}).toString() %>" class="btn-primary" style="width:auto; padding:8px 15px;">Next &raquo;</a>
+                <% } %>
+            </div>
+        <% } %>
     </main>
 </div>
+
+<style>
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+</style>
 
 <%- include('../partials/footer') %>

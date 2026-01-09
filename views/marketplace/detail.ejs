@@ -1,141 +1,321 @@
 <%- include('../partials/header') %>
 
 <div class="dashboard-wrapper">
-    <!-- Navbar akan otomatis disembunyikan jika user belum login -->
     <% if(user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <!-- Ubah margin agar full width jika belum login -->
     <main class="main-content" style="<%= user ? '' : 'margin-left:0; width:100%;' %>">
         <header class="top-header">
             <div style="display:flex;align-items:center;">
-                <!-- Hamburger hanya muncul jika login -->
-                <% if(user) { %>
-                    <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars"></i></button>
-                <% } else { %>
-                    <a href="/marketplace" class="btn-primary" style="width:auto; padding:5px 10px; margin-right:15px;">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </a>
-                <% } %>
+                <a href="/marketplace" class="btn-primary" style="width:auto; padding:5px 12px; margin-right:15px; background:transparent; border:1px solid var(--glass-border);">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
                 <div class="breadcrumb"><h2>Detail Produk</h2></div>
             </div>
             <% if(user) { %>
                 <div class="balance-card">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div>
             <% } else { %>
-                <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px;">Login untuk Beli</a>
+                <a href="/auth/login" class="btn-primary" style="width:auto; padding:8px 15px;">Login</a>
             <% } %>
         </header>
 
-        <div class="content-card">
-            <div class="card-body">
+        <div class="content-card" style="padding:0; overflow:hidden;">
+            <% if(typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+                <div style="background:rgba(16, 185, 129, 0.2); color:#34d399; padding:15px; text-align:center; border-bottom:1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-check-circle"></i> <%= success_msg %>
+                </div>
+            <% } %>
+            
+            <% if(typeof error_msg !== 'undefined' && error_msg.length > 0) { %>
+                <div style="background:rgba(239, 68, 68, 0.2); color:#f87171; padding:15px; text-align:center; border-bottom:1px solid rgba(239, 68, 68, 0.3);">
+                    <i class="fa-solid fa-circle-exclamation"></i> <%= error_msg %>
+                </div>
+            <% } %>
+
+            <div class="card-body" style="padding:25px;">
                 <div style="display:flex; gap:30px; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:300px;">
-                        <img src="<%= product.image %>" style="width:100%; border-radius:10px; border:1px solid var(--glass-border);">
+                    <div style="flex:1; min-width:320px;">
+                        <% if(product.videoPreview) { %>
+                            <video controls style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid var(--glass-border); max-height:300px; background:#000;">
+                                <source src="<%= product.videoPreview %>" type="video/mp4">
+                                Browser anda tidak mendukung video tag.
+                            </video>
+                        <% } %>
+                        <img src="<%= product.image %>" style="width:100%; border-radius:10px; border:1px solid var(--glass-border); object-fit:cover; max-height:400px;" id="mainImage">
+                        
+                        <% if(product.bundleWith && product.bundleWith.length > 0) { %>
+                            <div style="margin-top:20px; background:rgba(59,130,246,0.1); padding:15px; border-radius:8px; border:1px solid rgba(59,130,246,0.3);">
+                                <h4 style="margin-bottom:10px; font-size:14px;"><i class="fa-solid fa-gift"></i> Paket Bundle Hemat</h4>
+                                <% product.bundleWith.forEach(item => { %>
+                                    <a href="/marketplace/product/<%= item.slug %>" style="display:flex; gap:10px; align-items:center; margin-bottom:8px; text-decoration:none; color:var(--text-main);">
+                                        <img src="<%= item.image %>" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">
+                                        <div style="font-size:12px;">
+                                            <div><%= item.name %></div>
+                                            <div style="color:#34d399;">+ Rp <%= product.bundlePrice > 0 ? product.bundlePrice.toLocaleString('id-ID') : item.price.toLocaleString('id-ID') %></div>
+                                        </div>
+                                    </a>
+                                <% }) %>
+                            </div>
+                        <% } %>
                     </div>
-                    <div style="flex:1.5; min-width:300px;">
-                        <h1 style="font-size:28px; margin-bottom:10px;"><%= product.name %></h1>
-                        <div style="display:flex; gap:15px; margin-bottom:20px; font-size:14px; color:var(--text-muted);">
-                            <span><i class="fa-solid fa-tag"></i> <%= product.category %></span>
-                            <span><i class="fa-solid fa-star text-warning"></i> <%= product.averageRating.toFixed(1) %> (<%= product.reviews.length %>)</span>
-                            <span><i class="fa-solid fa-bag-shopping"></i> <%= product.sold %> Terjual</span>
+
+                    <div style="flex:1.5; min-width:320px;">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <h1 style="font-size:26px; margin-bottom:10px; line-height:1.3;"><%= product.name %></h1>
+                            <button onclick="shareProduct()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-share-nodes"></i></button>
                         </div>
 
-                        <% if(product.flashSaleEnd > new Date() && product.flashSalePrice > 0) { %>
-                            <div style="margin-bottom:10px;"><span class="badge bg-danger">FLASH SALE</span></div>
-                            <h2 style="color:#ef4444; text-decoration:line-through;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
-                            <h2 style="color:#34d399; font-size:32px;">Rp <%= product.flashSalePrice.toLocaleString('id-ID') %></h2>
+                        <div style="display:flex; gap:15px; margin-bottom:20px; font-size:13px; color:var(--text-muted);">
+                            <span class="badge bg-secondary"><%= product.category.toUpperCase() %></span>
+                            <span><i class="fa-solid fa-star text-warning"></i> <%= product.averageRating.toFixed(1) %></span>
+                            <span><i class="fa-solid fa-bag-shopping"></i> <%= product.sold %> Terjual</span>
+                            <span><i class="fa-solid fa-eye"></i> <%= product.views %> Views</span>
+                        </div>
+
+                        <% 
+                            const isFlashSale = product.flashSaleEnd > new Date() && product.flashSaleStart < new Date() && product.flashSalePrice > 0;
+                            let finalPrice = isFlashSale ? product.flashSalePrice : product.price;
+                            
+                            if(user && !isFlashSale) {
+                                if(user.rank === 'Silver') finalPrice *= 0.98;
+                                if(user.rank === 'Gold') finalPrice *= 0.95;
+                            }
+                        %>
+
+                        <% if(isFlashSale) { %>
+                            <div style="background:#ef4444; color:white; padding:10px 15px; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:bold;"><i class="fa-solid fa-bolt"></i> FLASH SALE</span>
+                                <span id="countdown" style="font-family:monospace; font-size:14px;">00:00:00</span>
+                            </div>
+                            <h2 style="color:#ef4444; text-decoration:line-through; font-size:16px;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
+                            <h2 style="color:#34d399; font-size:36px; font-family:monospace; margin-bottom:15px;">Rp <%= finalPrice.toLocaleString('id-ID') %></h2>
                         <% } else { %>
-                            <% 
-                                let finalPrice = product.price;
-                                if(user && user.rank === 'Silver') finalPrice *= 0.98;
-                                if(user && user.rank === 'Gold') finalPrice *= 0.95;
-                            %>
-                            <% if(finalPrice < product.price) { %>
-                                <small style="color:#fbbf24;">Harga Rank <%= user.rank %></small>
-                                <h2 style="color:#34d399; font-size:32px;">Rp <%= Math.ceil(finalPrice).toLocaleString('id-ID') %></h2>
-                                <small style="text-decoration:line-through;">Rp <%= product.price.toLocaleString('id-ID') %></small>
+                            <% if(user && finalPrice < product.price) { %>
+                                <div style="color:#fbbf24; font-size:12px; margin-bottom:5px;"><i class="fa-solid fa-crown"></i> Harga Rank <%= user.rank %></div>
+                                <h2 style="color:#34d399; font-size:36px; font-family:monospace; margin-bottom:5px;">Rp <%= Math.ceil(finalPrice).toLocaleString('id-ID') %></h2>
+                                <small style="text-decoration:line-through; color:var(--text-muted)">Rp <%= product.price.toLocaleString('id-ID') %></small>
                             <% } else { %>
-                                <h2 style="color:#34d399; font-size:32px;">Rp <%= product.price.toLocaleString('id-ID') %></h2>
+                                <h2 style="color:#34d399; font-size:36px; font-family:monospace; margin-bottom:15px;">Rp <%= finalPrice.toLocaleString('id-ID') %></h2>
                             <% } %>
                         <% } %>
-                        
-                        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin:20px 0; display:flex; align-items:center; gap:15px;">
-                            <img src="<%= product.seller.profile_pic %>" style="width:40px; height:40px; border-radius:50%;">
-                            <div>
-                                <div style="font-weight:600;"><%= product.seller.fullname %></div>
-                                <a href="/marketplace/store/<%= product.seller._id %>" style="font-size:12px; color:var(--neon-blue);">Kunjungi Toko</a>
+
+                        <% if(product.wholesalePrices && product.wholesalePrices.length > 0) { %>
+                            <div style="margin-bottom:20px;">
+                                <small style="color:var(--text-muted);">Harga Grosir:</small>
+                                <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:5px; margin-top:5px;">
+                                    <% product.wholesalePrices.sort((a,b) => a.minQty - b.minQty).forEach(ws => { %>
+                                        <div style="background:var(--glass-bg); padding:5px 10px; border-radius:6px; border:1px solid var(--glass-border); font-size:12px; min-width:80px; text-align:center;">
+                                            <div style="font-weight:bold;">≥ <%= ws.minQty %> Pcs</div>
+                                            <div style="color:#34d399;">Rp <%= ws.price.toLocaleString('id-ID') %></div>
+                                        </div>
+                                    <% }) %>
+                                </div>
                             </div>
+                        <% } %>
+
+                        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid var(--glass-border); display:flex; align-items:center; gap:15px;">
+                            <img src="<%= product.seller.profile_pic %>" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                            <div style="flex:1;">
+                                <div style="font-weight:600;"><%= product.seller.fullname || product.seller.username %> <% if(product.seller.isVerified){ %><i class="fa-solid fa-circle-check text-info"></i><% } %></div>
+                                <div style="font-size:12px; color:var(--text-muted);"><%= product.seller.lastActive ? 'Online: ' + new Date(product.seller.lastActive).toLocaleDateString() : 'Seller Terpercaya' %></div>
+                            </div>
+                            <a href="/marketplace/store/<%= product.seller._id %>" class="btn-primary" style="width:auto; padding:8px 15px; font-size:12px; background:transparent; border:1px solid var(--glass-border);">Kunjungi Toko</a>
                             <% if(user && user.id !== product.seller._id.toString()) { %>
-                                <a href="/chat/<%= product.seller._id %>" class="btn-primary" style="width:auto; margin-left:auto; background:rgba(255,255,255,0.1);"><i class="fa-regular fa-comments"></i> Chat</a>
+                                <a href="/chat/<%= product.seller._id %>" class="btn-primary" style="width:auto; padding:8px 15px; font-size:12px;">Chat</a>
                             <% } %>
                         </div>
 
-                        <form id="buyForm" action="/marketplace/buy/<%= product._id %>" method="POST">
-                            <% if(user) { %>
-                                <div class="form-group">
-                                    <label>Kode Voucher (Opsional)</label>
-                                    <input type="text" name="voucherCode" class="form-control" placeholder="Kode promo">
+                        <% if(product.stock > 0 && product.isActive) { %>
+                            <form action="/marketplace/buy/<%= product._id %>" method="POST" id="buyForm" onsubmit="return confirmPurchase()">
+                                <div style="display:flex; gap:15px; margin-bottom:15px;">
+                                    <div style="flex:1;">
+                                        <label style="font-size:12px; color:var(--text-muted);">Jumlah (<span style="<%= product.stock < 5 ? 'color:#ef4444' : '' %>">Stok: <%= product.stock %></span>)</label>
+                                        <input type="number" name="quantity" class="form-control" value="1" min="1" max="<%= product.stock %>" required>
+                                    </div>
+                                    <% if(user) { %>
+                                        <div style="flex:2;">
+                                            <label style="font-size:12px; color:var(--text-muted);">Kode Voucher</label>
+                                            <input type="text" name="voucherCode" class="form-control" placeholder="Optional">
+                                        </div>
+                                    <% } %>
                                 </div>
-                            <% } %>
-                            <button type="button" onclick="handleBuy()" class="btn-primary" style="padding:15px; font-size:16px;">
-                                <i class="fa-solid fa-cart-shopping"></i> Beli Sekarang
+
+                                <button type="submit" class="btn-primary" style="padding:15px; font-size:16px;">
+                                    <i class="fa-solid fa-cart-shopping"></i> Beli Sekarang
+                                </button>
+                            </form>
+                        <% } else { %>
+                            <button class="btn-primary" disabled style="background:#475569; cursor:not-allowed; padding:15px;">
+                                <%= !product.isActive ? 'PRODUK DIARSIPKAN' : 'STOK HABIS (SOLD OUT)' %>
                             </button>
-                        </form>
+                        <% } %>
                         
-                        <div style="margin-top:30px;">
-                            <h3>Deskripsi</h3>
-                            <p style="color:#cbd5e1; line-height:1.6; white-space:pre-wrap;"><%= product.description %></p>
+                        <div style="margin-top:20px; border-top:1px solid var(--glass-border); padding-top:20px;">
+                            <h3 style="font-size:18px; margin-bottom:10px;">Deskripsi</h3>
+                            <div style="font-size:14px; color:#cbd5e1; white-space:pre-wrap; line-height:1.6;"><%= product.description %></div>
                         </div>
+
+                        <% if(product.tags && product.tags.length > 0) { %>
+                            <div style="margin-top:15px; display:flex; gap:5px; flex-wrap:wrap;">
+                                <% product.tags.forEach(tag => { %>
+                                    <span style="font-size:11px; padding:3px 8px; background:rgba(255,255,255,0.1); border-radius:15px;">#<%= tag %></span>
+                                <% }) %>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
 
-                <div style="margin-top:50px; border-top:1px solid var(--glass-border); padding-top:30px;">
-                    <h3>Ulasan Pembeli</h3>
-                    <% if(user && hasBought && !product.reviews.find(r => r.user._id.toString() === user.id)) { %>
-                        <form action="/marketplace/review/<%= product._id %>" method="POST" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:10px; margin:20px 0;">
-                            <h4>Tulis Ulasan</h4>
-                            <div class="form-group"><select name="rating" class="form-control"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select></div>
-                            <div class="form-group"><textarea name="comment" class="form-control" placeholder="Ulasan anda..." rows="2"></textarea></div>
-                            <button class="btn-primary" style="width:auto;">Kirim Ulasan</button>
-                        </form>
-                    <% } %>
+                <div style="margin-top:40px; border-top:1px solid var(--glass-border); padding-top:30px;">
+                    <div style="display:flex; gap:20px; border-bottom:1px solid var(--glass-border); margin-bottom:20px;">
+                        <button class="tab-btn active" onclick="switchTab('reviews')">Ulasan (<%= product.reviews.length %>)</button>
+                        <button class="tab-btn" onclick="switchTab('discuss')">Diskusi (<%= product.discussions.length %>)</button>
+                    </div>
 
-                    <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
-                        <% if(product.reviews.length > 0) { %>
-                            <% product.reviews.forEach(review => { %>
-                                <div style="background:var(--glass-bg); padding:15px; border-radius:8px;">
-                                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                                        <img src="<%= review.user.profile_pic %>" style="width:30px; height:30px; border-radius:50%;">
-                                        <span style="font-weight:600;"><%= review.user.username %></span>
-                                        <span style="margin-left:auto; color:#fbbf24;"><i class="fa-solid fa-star"></i> <%= review.rating %></span>
+                    <div id="reviewsTab">
+                        <% if(user && hasBought && !product.reviews.find(r => r.user._id.toString() === user.id)) { %>
+                            <form action="/marketplace/review/<%= product._id %>" method="POST" style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; margin-bottom:20px;">
+                                <div style="display:flex; gap:10px;">
+                                    <select name="rating" class="form-control" style="width:100px;">
+                                        <option value="5">5 ⭐</option>
+                                        <option value="4">4 ⭐</option>
+                                        <option value="3">3 ⭐</option>
+                                        <option value="2">2 ⭐</option>
+                                        <option value="1">1 ⭐</option>
+                                    </select>
+                                    <input type="text" name="comment" class="form-control" placeholder="Tulis ulasan..." required>
+                                    <button class="btn-primary" style="width:auto;"><i class="fa-solid fa-paper-plane"></i></button>
+                                </div>
+                            </form>
+                        <% } %>
+
+                        <div style="display:flex; flex-direction:column; gap:15px;">
+                            <% if(product.reviews.length > 0) { %>
+                                <% product.reviews.forEach(rev => { %>
+                                    <div style="background:var(--glass-bg); padding:15px; border-radius:10px; border:1px solid var(--glass-border);">
+                                        <div style="display:flex; justify-content:space-between;">
+                                            <div style="display:flex; gap:10px; align-items:center;">
+                                                <img src="<%= rev.user.profile_pic %>" style="width:30px; height:30px; border-radius:50%;">
+                                                <span style="font-weight:bold; font-size:13px;"><%= rev.user.username %></span>
+                                            </div>
+                                            <span style="color:#fbbf24;"><% for(let i=0; i<rev.rating; i++){ %><i class="fa-solid fa-star"></i><% } %></span>
+                                        </div>
+                                        <p style="margin-top:8px; font-size:14px; color:#e2e8f0;"><%= rev.comment %></p>
+                                        <small style="color:var(--text-muted); font-size:10px;"><%= new Date(rev.createdAt).toLocaleDateString() %></small>
                                     </div>
-                                    <p style="font-size:14px; color:#e2e8f0;"><%= review.comment %></p>
+                                <% }) %>
+                            <% } else { %>
+                                <p style="text-align:center; color:var(--text-muted);">Belum ada ulasan.</p>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div id="discussTab" style="display:none;">
+                        <% if(user) { %>
+                            <form action="/marketplace/discuss/<%= product._id %>" method="POST" style="margin-bottom:20px;">
+                                <div style="display:flex; gap:10px;">
+                                    <input type="text" name="question" class="form-control" placeholder="Tanya penjual..." required>
+                                    <button class="btn-primary" style="width:auto;">Kirim</button>
+                                </div>
+                            </form>
+                        <% } %>
+
+                        <% if(product.discussions.length > 0) { %>
+                            <% product.discussions.forEach(disc => { %>
+                                <div style="margin-bottom:15px; background:var(--glass-bg); padding:15px; border-radius:10px;">
+                                    <div style="display:flex; gap:10px; align-items:center;">
+                                        <img src="<%= disc.user.profile_pic %>" style="width:30px; height:30px; border-radius:50%;">
+                                        <span style="font-weight:bold; font-size:13px;"><%= disc.user.username %></span>
+                                        <small style="color:var(--text-muted); margin-left:auto;"><%= new Date(disc.createdAt).toLocaleDateString() %></small>
+                                    </div>
+                                    <p style="margin:5px 0 0 40px; font-size:14px;">Q: <%= disc.question %></p>
+                                    <% if(disc.answer) { %>
+                                        <div style="margin:10px 0 0 40px; padding:10px; background:rgba(59,130,246,0.1); border-radius:6px;">
+                                            <p style="margin:0; font-size:13px; color:#93c5fd;"><strong>Penjual:</strong> <%= disc.answer %></p>
+                                        </div>
+                                    <% } %>
                                 </div>
                             <% }) %>
                         <% } else { %>
-                            <p style="color:var(--text-muted);">Belum ada ulasan.</p>
+                            <p style="text-align:center; color:var(--text-muted);">Belum ada diskusi.</p>
                         <% } %>
                     </div>
                 </div>
             </div>
         </div>
+
+        <% if(relatedProducts.length > 0) { %>
+            <h3 style="margin:30px 0 15px;">Produk Sejenis</h3>
+            <div class="mp-grid">
+                <% relatedProducts.forEach(rel => { %>
+                    <div class="mp-card" onclick="window.location.href='/marketplace/product/<%= rel.slug %>'">
+                        <div style="position:relative;">
+                            <img src="<%= rel.image %>" class="mp-img">
+                            <span class="badge" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.6);"><%= rel.category %></span>
+                        </div>
+                        <div class="mp-details">
+                            <div class="mp-title" style="font-size:14px;"><%= rel.name %></div>
+                            <div class="mp-price">Rp <%= rel.price.toLocaleString('id-ID') %></div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
     </main>
 </div>
 
-<script>
-    function handleBuy() {
-        // Cek jika variabel 'user' (dari EJS) ada atau tidak
-        const isLoggedIn = !!<%- JSON.stringify(user) %>;
+<style>
+    .tab-btn { background:none; border:none; padding:10px 20px; color:var(--text-muted); cursor:pointer; font-weight:600; border-bottom:2px solid transparent; }
+    .tab-btn.active { color:var(--neon-blue); border-bottom:2px solid var(--neon-blue); }
+</style>
 
-        if (isLoggedIn) {
-            if (confirm('Konfirmasi pembelian? Saldo akan terpotong.')) {
-                document.getElementById('buyForm').submit();
-            }
-        } else {
-            alert('Anda harus login terlebih dahulu untuk membeli produk.');
-            window.location.href = '/auth/login';
-        }
+<script>
+    function switchTab(tab) {
+        document.getElementById('reviewsTab').style.display = tab === 'reviews' ? 'block' : 'none';
+        document.getElementById('discussTab').style.display = tab === 'discuss' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
     }
+
+    function confirmPurchase() {
+        <% if(!user) { %>
+            window.location.href = '/auth/login';
+            return false;
+        <% } %>
+        return confirm('Lanjutkan pembelian? Saldo akan terpotong otomatis.');
+    }
+
+    function shareProduct() {
+        navigator.clipboard.writeText(window.location.href);
+        alert('Link produk disalin!');
+    }
+
+    <% if(isFlashSale) { %>
+        const endTime = new Date("<%= product.flashSaleEnd %>").getTime();
+        const interval = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = endTime - now;
+            if (distance < 0) {
+                clearInterval(interval);
+                const cdEl = document.getElementById("countdown");
+                if(cdEl) {
+                    cdEl.innerHTML = "EXPIRED";
+                    window.location.reload();
+                }
+            } else {
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                const cdEl = document.getElementById("countdown");
+                if(cdEl) {
+                    cdEl.innerHTML = 
+                        (hours < 10 ? '0'+hours : hours) + ":" + 
+                        (minutes < 10 ? '0'+minutes : minutes) + ":" + 
+                        (seconds < 10 ? '0'+seconds : seconds);
+                }
+            }
+        }, 1000);
+    <% } %>
 </script>
+
 <%- include('../partials/footer') %>
