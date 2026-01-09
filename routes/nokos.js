@@ -69,7 +69,10 @@ router.post('/', ensureAuthenticated, async (req, res) => {
 
     try {
         if (nominal < 10000) {
-            const response = await axios.get(`${RUMAHOTP_API}/v1/deposit/create?amount=${nominal}&payment_id=qris`, {
+            const fee = 1000;
+            const amountWithFee = nominal + fee;
+
+            const response = await axios.get(`${RUMAHOTP_API}/v1/deposit/create?amount=${amountWithFee}&payment_id=qris`, {
                 headers: { 'x-apikey': RUMAHOTP_KEY, 'Accept': 'application/json' }
             });
 
@@ -79,7 +82,7 @@ router.post('/', ensureAuthenticated, async (req, res) => {
                 await new Deposit({
                     user: user._id,
                     order_id: data.id,
-                    amount: data.currency.total,
+                    amount: nominal,
                     status: 'Pending',
                     payment_type: 'qris_rumahotp',
                     qr_code: data.qr,
