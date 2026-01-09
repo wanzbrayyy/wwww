@@ -14,14 +14,15 @@ const UserSchema = new mongoose.Schema({
   twoFASecret: { type: String },
   is2FAEnabled: { type: Boolean, default: false },
   
-  
   rank: { type: String, default: 'Bronze', enum: ['Bronze', 'Silver', 'Gold'] },
   totalDeposit: { type: Number, default: 0 },
   referralCode: { type: String, unique: true },
   referredBy: { type: String }, 
   referralEarnings: { type: Number, default: 0 },
   lastDailyClaim: { type: Date },
-  monthlySpend: { type: Number, default: 0 } 
+  monthlySpend: { type: Number, default: 0 },
+  
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] 
 }, { timestamps: true });
 
 UserSchema.pre('save', async function (next) {
