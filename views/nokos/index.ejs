@@ -1,4 +1,5 @@
 <%- include('../partials/header') %>
+
 <style>
     .custom-select-trigger {
         background: var(--glass-bg);
@@ -24,7 +25,6 @@
         background: #0f172a;
         border-color: var(--glass-border);
     }
-    
     .selection-modal {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
@@ -80,7 +80,6 @@
     }
     .modal-body::-webkit-scrollbar { width: 5px; }
     .modal-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
     .select-item {
         display: flex;
         align-items: center;
@@ -104,7 +103,6 @@
     .item-title { font-weight: 600; font-size: 14px; color: white; }
     .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
     .item-price { color: #34d399; font-weight: bold; font-size: 14px; font-family: monospace; }
-    
     .close-modal {
         background: none;
         border: none;
@@ -113,7 +111,6 @@
         cursor: pointer;
         padding: 5px;
     }
-
     .price-summary-card {
         background: rgba(15, 23, 42, 0.6);
         border: 1px dashed var(--neon-blue);
@@ -139,7 +136,6 @@
         text-shadow: 0 0 10px rgba(52, 211, 153, 0.2);
         font-family: monospace;
     }
-
     .btn-deposit {
         background: linear-gradient(135deg, #ef4444, #b91c1c);
         box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
@@ -147,7 +143,6 @@
     .btn-deposit:hover {
         transform: translateY(-2px);
     }
-
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
@@ -169,7 +164,6 @@
         <div class="content-card">
             <div class="card-body">
                 <form action="/nokos/order" method="POST" id="nokosForm">
-                    
                     <div class="form-group">
                         <label>1. Pilih Aplikasi</label>
                         <div class="custom-select-trigger" id="triggerService" onclick="openModal('service')">
@@ -238,7 +232,7 @@
 
 <script>
     const servicesRaw = <%- JSON.stringify(services) %>;
-    const userBalance = <%= user.balance || 0 %>;
+    const userBalance = parseInt('<%= user.balance || 0 %>');
     
     let currentCountries = [];
     let currentProviders = [];
@@ -402,7 +396,7 @@
     async function selectProvider(idx) {
         closeModal();
         const data = currentProviders[idx];
-        const price = data.price;
+        const price = parseInt(data.price);
 
         els.inpProviderId.value = data.provider_id;
         els.inpPrice.value = price;
