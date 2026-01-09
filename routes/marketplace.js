@@ -303,7 +303,8 @@ router.get('/store/:sellerId', async (req, res) => {
             css: 'dashboard.css',
             seller,
             products,
-            totalSold
+            totalSold,
+            currentUser: req.session.user || null
         });
     } catch (err) {
         res.redirect('/marketplace');
