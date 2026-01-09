@@ -28,23 +28,24 @@
             <i class="fa-solid fa-power-off"></i>
         </a>
     </div>
-    <!-- Tambahkan ini di dalam <div class="sidebar-content"> atau <div class="user-mini-profile"> -->
-<div class="nav-section">
-    <div class="menu-label">Bahasa / Language</div>
-    <div style="padding: 0 15px;">
-        <select id="globalLanguageSelector" class="form-control" onchange="changeLanguage(this.value)" style="background: var(--hover-bg);">
-            <option value="id">🇮🇩 Indonesia</option>
-            <option value="en">🇺🇸 English</option>
-            <option value="ja">🇯🇵 Japanese</option>
-            <option value="ar">🇸🇦 Arabic</option>
-            <option value="zh-cn">🇨🇳 Chinese</option>
-            <option value="es">🇪🇸 Spanish</option>
-            <option value="ru">🇷🇺 Russian</option>
-        </select>
+
+    <div class="nav-section">
+        <div class="menu-label">Bahasa / Language</div>
+        <div style="padding: 0 15px;">
+            <select id="globalLanguageSelector" class="form-control" onchange="changeLanguage(this.value)" style="background: var(--hover-bg);">
+                <option value="id">🇮🇩 Indonesia</option>
+                <option value="en">🇺🇸 English</option>
+                <option value="ja">🇯🇵 Japanese</option>
+                <option value="ar">🇸🇦 Arabic</option>
+                <option value="zh-cn">🇨🇳 Chinese</option>
+                <option value="es">🇪🇸 Spanish</option>
+                <option value="ru">🇷🇺 Russian</option>
+            </select>
+        </div>
     </div>
-</div>
+
     <div class="sidebar-content">
-           <div class="nav-section">
+        <div class="nav-section">
             <div class="menu-label">Utama</div>
             <ul class="list-unstyled components">
                 <li class="<%= title.includes('Dashboard') ? 'active' : '' %>">
@@ -57,21 +58,19 @@
                         <i class="fa-solid fa-book-open-reader"></i> Tutorial
                     </a>
                 </li>
-<li class="<%= title.includes('Afiliasi') ? 'active' : '' %>">
+                <li class="<%= title.includes('Afiliasi') ? 'active' : '' %>">
                     <a href="/affiliate">
                         <i class="fa-solid fa-share-nodes"></i> Program Afiliasi
                     </a>
                 </li>
-                <!-- AKHIR TAMBAHAN -->
-
                 <li class="<%= title.includes('Pusat Informasi') ? 'active' : '' %>">
                     <a href="/information">
                         <i class="fa-solid fa-newspaper"></i> Informasi & Berita
                     </a>
                 </li>
-            
             </ul>
         </div>
+
         <div class="nav-section">
             <div class="menu-label">Marketplace</div>
             <ul class="list-unstyled components">
@@ -87,6 +86,7 @@
                 </li>
             </ul>
         </div>
+
         <% if(user.role === 'seller' || user.role === 'admin') { %>
             <div class="nav-section">
                 <div class="menu-label" style="color: #fbbf24;">Panel Seller</div>
@@ -104,6 +104,7 @@
                 </ul>
             </div>
         <% } %>
+
         <div class="nav-section">
             <div class="menu-label">Layanan</div>
             <ul class="list-unstyled components">
@@ -117,6 +118,11 @@
                         <i class="fa-solid fa-mobile-screen-button"></i> Beli PPOB
                     </a>
                 </li>
+                <li class="<%= title.includes('Order Nomor Kosong') ? 'active' : '' %>">
+                    <a href="/nokos">
+                        <i class="fa-solid fa-sim-card"></i> Order Nokos
+                    </a>
+                </li>
                 <li class="<%= title.includes('Deposit') ? 'active' : '' %>">
                     <a href="/deposit">
                         <i class="fa-solid fa-wallet"></i> Isi Saldo
@@ -124,21 +130,23 @@
                 </li>
             </ul>
         </div>
-<div class="nav-section">
-    <div class="menu-label">Tools</div>
-    <ul class="list-unstyled components">
-        <li class="<%= title.includes('TikTok') ? 'active' : '' %>">
-            <a href="/tools/tiktok">
-                <i class="fa-brands fa-tiktok"></i> TikTok Downloader
-            </a>
-        </li>
-        <li class="<%= title.includes('Instagram') ? 'active' : '' %>">
-            <a href="/tools/ig-stalk">
-                <i class="fa-brands fa-instagram"></i> Instagram Stalker
-            </a>
-        </li>
-    </ul>
-</div>
+
+        <div class="nav-section">
+            <div class="menu-label">Tools</div>
+            <ul class="list-unstyled components">
+                <li class="<%= title.includes('TikTok') ? 'active' : '' %>">
+                    <a href="/tools/tiktok">
+                        <i class="fa-brands fa-tiktok"></i> TikTok Downloader
+                    </a>
+                </li>
+                <li class="<%= title.includes('Instagram') ? 'active' : '' %>">
+                    <a href="/tools/ig-stalk">
+                        <i class="fa-brands fa-instagram"></i> Instagram Stalker
+                    </a>
+                </li>
+            </ul>
+        </div>
+
         <div class="nav-section">
             <div class="menu-label">Riwayat</div>
             <ul class="list-unstyled components">
@@ -152,6 +160,11 @@
                         <i class="fa-solid fa-receipt"></i> Riwayat PPOB
                     </a>
                 </li>
+                <li class="<%= title.includes('Riwayat Nokos') ? 'active' : '' %>">
+                    <a href="/nokos/history">
+                        <i class="fa-solid fa-phone-volume"></i> Riwayat Nokos
+                    </a>
+                </li>
                 <li class="<%= title.includes('Riwayat Deposit') ? 'active' : '' %>">
                     <a href="/deposit/history">
                         <i class="fa-solid fa-file-invoice-dollar"></i> Riwayat Deposit
@@ -159,6 +172,7 @@
                 </li>
             </ul>
         </div>
+
         <% if(user.role === 'admin') { %>
             <div class="nav-section">
                 <div class="menu-label" style="color: #f87171;">Administrator</div>
@@ -197,6 +211,5 @@
             </div>
         <% } %>
     </div>
-    
 </nav>
 <div class="overlay" id="overlay"></div>
