@@ -15,195 +15,555 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #58a6ff;
-            --bg-dark: #0d1117;
-            --bg-light: #161b22;
-            --border: #30363d;
-            --text-main: #c9d1d9;
-            --text-secondary: #8b949e;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #1C82CD 100%);
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         html { scroll-behavior: smooth; }
+        
         body {
-            font-family: 'inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             overflow-x: hidden;
+            line-height: 1.6;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* NAVBAR */
         .landing-nav {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 15px 0; z-index: 1000;
-            background: rgba(13, 17, 23, 0.8); backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 15px 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
         }
+
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
-        .brand { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-        .brand i { color: var(--primary); }
-        .nav-buttons { display: flex; gap: 15px; }
+        
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .brand i { 
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-buttons { display: flex; gap: 12px; }
+
         .btn {
-            display: inline-block; padding: 8px 18px; border-radius: 6px;
-            font-size: 14px; font-weight: 600; text-decoration: none; transition: 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
-        .btn-login { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
-        .btn-login:hover { background: var(--bg-light); color: var(--text-main); }
-        .btn-register { background: var(--primary); color: var(--bg-dark); }
-        .btn-register:hover { opacity: 0.8; }
+
+        .btn-login {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        
+        .btn-login:hover {
+            background: var(--bg-card);
+            border-color: var(--primary);
+        }
+
+        .btn-register {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        /* HERO SECTION */
         .hero {
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            text-align: center; padding-top: 80px; position: relative; overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
         }
-        .hero::before {
-            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 800px; height: 800px; background: radial-gradient(circle, rgba(88, 166, 255, 0.15) 0%, transparent 70%);
-            z-index: -1;
+
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
-        .hero-content h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; margin-bottom: 20px;
-            line-height: 1.1; letter-spacing: -2px;
-            background: linear-gradient(135deg, #fff 40%, var(--text-secondary) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 50px;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
-        .highlight { color: var(--primary); }
-        .hero-content p {
-            font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto 30px;
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
         }
-        .section { padding: 100px 0; border-bottom: 1px solid var(--border); }
-        .section-header { text-align: center; margin-bottom: 60px; }
-        .section-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; }
-        .section-header p { color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .feature-card {
-            background: var(--bg-light); padding: 30px; border-radius: 12px;
-            border: 1px solid var(--border); transition: 0.3s;
+
+        .hero h1 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .feature-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .feature-card i { font-size: 24px; color: var(--primary); margin-bottom: 15px; }
-        .feature-card h3 { font-size: 1.2rem; margin-bottom: 10px; }
-        .feature-card p { font-size: 0.95rem; color: var(--text-secondary); }
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
-        .about-image { width: 100%; border-radius: 12px; }
+
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* STATS SECTION */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+            padding: 30px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* FEATURES SECTION */
+        .section {
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 3vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            padding: 35px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.2);
+        }
+
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 25px;
+        }
+
+        .service-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* FAQ SECTION (ACCORDION) */
+        .faq-grid {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        details.faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        details.faq-item[open] {
+            border-color: var(--primary);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        summary.faq-question {
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        summary.faq-question::-webkit-details-marker {
+            display: none;
+        }
+
+        summary.faq-question::after {
+            content: '\f078';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+
+        details[open] summary.faq-question::after {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .faq-answer {
+            padding: 0 20px 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 10px;
+            padding-top: 20px;
+        }
+
+        .faq-answer strong { color: white; }
+        .faq-answer ul { padding-left: 20px; margin-top: 10px; }
+        .faq-answer li { margin-bottom: 5px; }
+
+        /* CTA SECTION */
         .cta-section {
-            background: linear-gradient(135deg, #1e293b, var(--bg-dark));
-            padding: 60px; border-radius: 20px; text-align: center;
+            background: var(--gradient);
+            border-radius: 24px;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        footer { padding: 40px 0; text-align: center; color: var(--text-secondary); font-size: 14px; }
-        @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; } }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-section h2 {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .cta-btn {
+            background: white;
+            color: var(--primary);
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            display: inline-block;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .hero { padding-top: 100px; text-align: center; }
+            .nav-buttons { display: none; } /* Opsional: Bisa diganti hamburger */
+            .stats-container { grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+            .stat-value { font-size: 1.8rem; }
+            .cta-section { padding: 40px 20px; }
+        }
     </style>
 </head>
 <body>
 
     <nav class="landing-nav">
         <div class="container nav-content">
-            <div class="brand">
-                <i class="fa-solid fa-bolt"></i>
-                wanzofc shop
-            </div>
+            <a href="/" class="brand">
+                <i class="fa-solid fa-store"></i> WANZOFC SHOP
+            </a>
             <div class="nav-buttons">
-                <a href="/auth/login" class="btn btn-login">masuk</a>
-                <a href="/auth/register" class="btn btn-register">daftar</a>
+                <a href="/auth/login" class="btn btn-login">Masuk</a>
+                <a href="/auth/register" class="btn btn-register">Daftar Sekarang</a>
             </div>
         </div>
     </nav>
 
-    <% if (typeof variant !== 'undefined' && variant === 'A') { %>
-        <section class="hero">
-            <div class="container hero-content">
-                <h1 class="hero-title">
-                    platform <span class="highlight">#1</span> untuk semua <br> kebutuhan digital anda.
-                </h1>
-                <p class="hero-subtitle">
-                    solusi all-in-one untuk smm, ppob, topup game dan marketplace produk digital dengan proses otomatis 24 jam.
-                </p>
-                <div class="hero-buttons">
-                    <a href="/auth/register" class="btn btn-register" style="padding: 12px 30px; font-size: 16px;">
-                        mulai sekarang <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
-                    </a>
-                </div>
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-badge"><i class="fa-solid fa-star"></i> Platform Digital Terpercaya</div>
+            <h1>Solusi <span>All-in-One</span> untuk <br> Bisnis Digital Anda</h1>
+            <p>Satu platform untuk semua kebutuhan: Topup Game, PPOB, SMM Panel, Order Nomor Kosong (Nokos), dan Marketplace Produk Digital. Otomatis & Instan.</p>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 50px; flex-wrap: wrap;">
+                <a href="/auth/register" class="btn btn-register" style="padding: 15px 35px; font-size: 16px;">
+                    Mulai Gratis <i class="fa-solid fa-arrow-right" style="margin-left: 10px;"></i>
+                </a>
+                <a href="#layanan" class="btn btn-login" style="padding: 15px 35px; font-size: 16px;">
+                    Pelajari Fitur
+                </a>
             </div>
-        </section>
-    <% } else { %>
-        <section class="hero" style="background: radial-gradient(circle at top, #1e293b, #0d1117);">
-            <div class="container hero-content" style="text-align: left; display: flex; align-items: center; gap: 30px;">
-                <div style="flex: 1;">
-                    <h1 class="hero-title" style="font-size: 3rem;">tingkatkan bisnis digital anda</h1>
-                    <ul style="list-style: none; padding: 0; margin: 20px 0; color: #8b949e;">
-                        <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:var(--primary); margin-right:10px;"></i> transaksi otomatis 24 jam</li>
-                        <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:var(--primary); margin-right:10px;"></i> harga termurah & bersaing</li>
-                        <li style="margin-bottom:10px;"><i class="fa-solid fa-check" style="color:var(--primary); margin-right:10px;"></i> api developer ready</li>
-                    </ul>
-                    <a href="/auth/register" class="btn btn-register" style="padding: 12px 30px;">gabung gratis</a>
-                </div>
-                <div style="flex: 1; text-align: right; display: flex; justify-content: center;">
-                    <i class="fa-solid fa-rocket" style="font-size: 15rem; opacity: 0.2; color: white;"></i>
-                </div>
-            </div>
-        </section>
-    <% } %>
 
-    <section class="section" id="fitur">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-value" data-target="15000">0+</span>
+                    <span class="stat-label">Pengguna</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" data-target="500000">0+</span>
+                    <span class="stat-label">Transaksi</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" data-target="24">0</span>
+                    <span class="stat-label">Jam Layanan</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" data-target="500">0+</span>
+                    <span class="stat-label">Layanan</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="layanan">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">semua ada di sini.</h2>
-                <p class="section-subtitle">layanan lengkap untuk memaksimalkan potensi digital anda.</p>
+                <h2 class="section-title">Ekosistem Digital Lengkap</h2>
+                <p class="section-subtitle">Kami menyediakan berbagai layanan untuk membantu mempercepat pertumbuhan bisnis digital Anda.</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fa-solid fa-hashtag"></i>
-                    <h3>layanan smm</h3>
-                    <p>ribuan layanan sosial media terbaik untuk instagram, tiktok, youtube, dan lainnya.</p>
+            
+            <div class="services-grid">
+                <!-- SMM -->
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-hashtag"></i></div>
+                    <h3>SMM Panel</h3>
+                    <p>Layanan Social Media Marketing terlengkap untuk Instagram, TikTok, YouTube, dll. Tingkatkan followers, likes, dan views secara instan dengan harga termurah.</p>
                 </div>
-                <div class="feature-card">
-                    <i class="fa-solid fa-bolt-lightning"></i>
-                    <h3>ppob & topup</h3>
-                    <p>isi pulsa, kuota, token pln, dan voucher game dengan harga termurah.</p>
+
+                <!-- NOKOS -->
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-sim-card"></i></div>
+                    <h3>Nokos (Nomor Kosong)</h3>
+                    <p>Butuh verifikasi OTP untuk WhatsApp, Telegram, atau aplikasi lain? Gunakan layanan Nomor Virtual (Nokos) kami. Tersedia dari berbagai negara.</p>
                 </div>
-                <div class="feature-card">
-                    <i class="fa-solid fa-store"></i>
-                    <h3>marketplace</h3>
-                    <p>jual beli produk digital seperti script, akun premium, dan e-course dengan aman.</p>
+
+                <!-- PPOB -->
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    <h3>PPOB & Topup</h3>
+                    <p>Isi pulsa, paket data, token PLN, hingga topup game populer (MLBB, FF, PUBG) otomatis 24 jam dengan harga agen.</p>
+                </div>
+
+                <!-- MARKETPLACE -->
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-store"></i></div>
+                    <h3>Marketplace Digital</h3>
+                    <p>Tempat jual beli aset digital aman. Temukan script, source code, akun premium, e-course, dan tools marketing dari seller terpercaya.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section" id="tentang">
+    <section class="section" id="faq">
         <div class="container">
-            <div class="about-grid">
-                <div class="about-text">
-                    <h2 class="section-title" style="text-align: left; margin-bottom: 20px;">mengapa wanzofc?</h2>
-                    <p class="section-subtitle" style="text-align: left; margin: 0 0 20px 0;">
-                        kami adalah ekosistem digital yang dirancang untuk kecepatan dan keamanan. dengan dukungan teknologi terkini dan tim support yang responsif, kami memastikan setiap transaksi anda berjalan lancar.
-                    </p>
-                </div>
-                <div class="about-image-container">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070" alt="Analitik" class="about-image">
-                </div>
+            <div class="section-header">
+                <h2 class="section-title">Pertanyaan Umum (FAQ)</h2>
+                <p class="section-subtitle">Informasi detail mengenai cara kerja dan layanan di Wanzofc Shop.</p>
+            </div>
+
+            <div class="faq-grid">
+                <!-- DEPOSIT -->
+                <details class="faq-item">
+                    <summary class="faq-question">Bagaimana cara melakukan Deposit Saldo?</summary>
+                    <div class="faq-answer">
+                        Deposit saldo di Wanzofc sangat mudah dan otomatis:
+                        <ul>
+                            <li><strong>Nominal Kecil (Rp 2.000 - Rp 9.999):</strong> Gunakan <strong>QRIS RumahOTP</strong>. Scan QR code menggunakan E-Wallet (Dana, OVO, Gopay) atau Mobile Banking. Saldo masuk otomatis dalam hitungan detik.</li>
+                            <li><strong>Nominal Besar (Rp 10.000+):</strong> Gunakan <strong>Midtrans</strong>. Mendukung Virtual Account (BCA, BRI, Mandiri, BNI), E-Wallet, dan Retail (Alfamart/Indomaret).</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- NOKOS -->
+                <details class="faq-item">
+                    <summary class="faq-question">Apa itu Nokos dan bagaimana cara ordernya?</summary>
+                    <div class="faq-answer">
+                        <strong>Nokos (Nomor Kosong)</strong> adalah layanan nomor HP virtual untuk menerima SMS OTP verifikasi aplikasi tanpa kartu SIM fisik.
+                        <br><br>
+                        Cara order:
+                        1. Pastikan saldo cukup.
+                        2. Masuk menu <strong>Order Nokos</strong>.
+                        3. Pilih Aplikasi (misal: WhatsApp).
+                        4. Pilih Negara dan Server.
+                        5. Nomor akan muncul, masukkan ke aplikasi target, dan tunggu kode OTP muncul di website kami.
+                    </div>
+                </details>
+
+                <!-- SMM -->
+                <details class="faq-item">
+                    <summary class="faq-question">Apakah layanan SMM aman untuk akun saya?</summary>
+                    <div class="faq-answer">
+                        Secara umum layanan SMM kami aman karena hanya membutuhkan <strong>Username</strong> atau <strong>Link Postingan</strong> target. Kami tidak pernah meminta Password akun sosial media Anda. Namun, harap patuhi kebijakan penggunaan masing-masing platform sosial media.
+                    </div>
+                </details>
+
+                <!-- PPOB -->
+                <details class="faq-item">
+                    <summary class="faq-question">Berapa lama proses transaksi PPOB & Topup Game?</summary>
+                    <div class="faq-answer">
+                        Transaksi PPOB (Pulsa, Token PLN) dan Topup Game diproses secara <strong>Otomatis (Instant)</strong> detik itu juga setelah Anda melakukan pembayaran atau klik order. Jika terjadi gangguan, sistem akan otomatis mengembalikan saldo Anda.
+                    </div>
+                </details>
+
+                <!-- MARKETPLACE -->
+                <details class="faq-item">
+                    <summary class="faq-question">Bagaimana sistem di Marketplace Produk?</summary>
+                    <div class="faq-answer">
+                        <strong>Untuk Pembeli:</strong> Pilih produk -> Bayar -> File/Akun dikirim otomatis ke Email atau Chat. Garansi uang kembali jika produk tidak sesuai.
+                        <br>
+                        <strong>Untuk Penjual:</strong> Anda bisa mendaftar menjadi Seller untuk menjual produk digital Anda sendiri dan mendapatkan penghasilan tambahan.
+                    </div>
+                </details>
             </div>
         </div>
     </section>
 
-    <section class="section" id="gabung">
+    <section class="section" style="padding-bottom: 100px;">
         <div class="container">
             <div class="cta-section">
-                <h2 class="section-title">terima kasih sudah mampir!</h2>
-                <p class="section-subtitle" style="margin-bottom: 30px;">
-                    bergabunglah dengan ribuan pengguna lain dan nikmati kemudahan transaksi digital.
-                </p>
-                <a href="/auth/register" class="btn btn-register" style="padding: 15px 40px; font-size: 18px;">
-                    daftar gratis sekarang!
-                </a>
+                <div class="cta-content">
+                    <h2>Siap Memulai Bisnis Digital?</h2>
+                    <p style="color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto;">Daftar sekarang gratis dan nikmati kemudahan transaksi dalam satu genggaman.</p>
+                    <a href="/auth/register" class="cta-btn">Daftar Akun Gratis</a>
+                </div>
             </div>
         </div>
     </section>
 
     <footer>
         <div class="container">
-            <p>&copy;  wanzofc shop.</p>
+            <div style="margin-bottom: 20px;">
+                <a href="instagram.com/wanz_brayy" style="color: var(--text-muted); margin: 0 10px; font-size: 20px;"><i class="fa-brands fa-instagram"></i></a>
+                <a href="wa.me/6288801074059" style="color: var(--text-muted); margin: 0 10px; font-size: 20px;"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="t.me/maverick_dark" style="color: var(--text-muted); margin: 0 10px; font-size: 20px;"><i class="fa-brands fa-telegram"></i></a>
+            </div>
+            <p>&copy; 2026 WANZOFC SHOP. All rights reserved.</p>
         </div>
     </footer>
 
@@ -211,36 +571,50 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script>
         gsap.registerPlugin(ScrollTrigger);
-        gsap.from(".hero-title", { duration: 1, y: 50, opacity: 0, ease: "power4.out", delay: 0.2 });
-        gsap.from(".hero-subtitle", { duration: 1, y: 50, opacity: 0, ease: "power4.out", delay: 0.4 });
-        gsap.from(".hero-buttons", { duration: 1, y: 50, opacity: 0, ease: "power4.out", delay: 0.6 });
-        
-        gsap.utils.toArray('.section-title, .section-subtitle').forEach(elem => {
-            gsap.from(elem, {
-                duration: 0.8, y: 50, opacity: 0, ease: 'power3.out',
-                scrollTrigger: { trigger: elem, start: 'top 85%', toggleActions: 'play none none none' }
+
+        // Hero Animations
+        const tl = gsap.timeline();
+        tl.from(".hero-badge", { y: 20, opacity: 0, duration: 0.5 })
+          .from(".hero h1", { y: 30, opacity: 0, duration: 0.8 }, "-=0.3")
+          .from(".hero p", { y: 20, opacity: 0, duration: 0.8 }, "-=0.6")
+          .from(".hero .btn", { y: 20, opacity: 0, stagger: 0.1, duration: 0.5 }, "-=0.5")
+          .from(".stats-container", { y: 50, opacity: 0, duration: 0.8 }, "-=0.3");
+
+        // Scroll Animations
+        gsap.utils.toArray('.section-header').forEach(header => {
+            gsap.from(header, {
+                scrollTrigger: { trigger: header, start: "top 80%" },
+                y: 50, opacity: 0, duration: 0.8
             });
         });
 
-        gsap.utils.toArray('.feature-card').forEach((card, i) => {
+        gsap.utils.toArray('.service-card').forEach((card, i) => {
             gsap.from(card, {
-                duration: 0.8, y: 50, opacity: 0, ease: 'power3.out', delay: i * 0.1,
-                scrollTrigger: { trigger: card, start: 'top 85%', toggleActions: 'play none none none' }
+                scrollTrigger: { trigger: card, start: "top 85%" },
+                y: 50, opacity: 0, duration: 0.6, delay: i * 0.1
             });
         });
 
-        gsap.from(".about-text", {
-            duration: 1, x: -50, opacity: 0, ease: 'power3.out',
-            scrollTrigger: { trigger: ".about-grid", start: 'top 70%' }
-        });
-        gsap.from(".about-image-container", {
-            duration: 1, x: 50, opacity: 0, ease: 'power3.out',
-            scrollTrigger: { trigger: ".about-grid", start: 'top 70%' }
+        gsap.utils.toArray('.faq-item').forEach((item, i) => {
+            gsap.from(item, {
+                scrollTrigger: { trigger: item, start: "top 90%" },
+                y: 30, opacity: 0, duration: 0.5, delay: i * 0.1
+            });
         });
 
-        gsap.from(".cta-section", {
-            duration: 1, scale: 0.95, opacity: 0, ease: 'power3.out',
-            scrollTrigger: { trigger: ".cta-section", start: 'top 80%' }
+        // Counter Animation
+        const stats = document.querySelectorAll('.stat-value');
+        stats.forEach(stat => {
+            const target = +stat.getAttribute('data-target');
+            gsap.to(stat, {
+                innerHTML: target,
+                duration: 2,
+                scrollTrigger: { trigger: stat, start: "top 85%" },
+                snap: { innerHTML: 1 },
+                onUpdate: function() {
+                    this.targets()[0].innerHTML = Math.ceil(this.targets()[0].innerHTML).toLocaleString() + "+";
+                }
+            });
         });
     </script>
 </body>
