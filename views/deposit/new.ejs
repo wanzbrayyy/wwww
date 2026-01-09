@@ -13,33 +13,69 @@
                 </div>
             </div>
             <div class="header-right">
-                <div class="balance-pill"><div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div></div>
+                <div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div>
             </div>
         </header>
 
         <div class="content-card">
             <div class="card-header">
-                <h3><i class="fa-solid fa-wallet text-success"></i> Isi Saldo</h3>
+                <h3><i class="fa-solid fa-wallet text-success"></i> Form Deposit</h3>
             </div>
             <div class="card-body">
                 <form action="/deposit" method="POST">
                     <div class="form-group">
-                        <label>Jumlah Deposit (Min Rp 10.000)</label>
+                        <label>Jumlah Deposit (Rp)</label>
                         <div class="input-with-icon">
                             <i class="fa-solid fa-money-bill-wave"></i>
-                            <input type="number" name="amount" class="form-control" placeholder="Contoh: 50000" min="10000" required>
+                            <input type="number" name="amount" id="amountInput" class="form-control" placeholder="Minimal Rp 2.000" min="2000" required>
                         </div>
                     </div>
-                    
-                    <div class="alert alert-info" style="margin-bottom: 20px;">
-                        <i class="fa-solid fa-info-circle"></i> Metode pembayaran didukung: QRIS, E-Wallet (Dana, OVO, ShopeePay), Transfer Bank, dan Alfamart/Indomaret.
+
+                    <div id="paymentMethodAlert" class="alert alert-info" style="margin-bottom: 20px; transition: 0.3s;">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Masukkan nominal untuk melihat metode pembayaran yang tersedia.</span>
                     </div>
 
-                    <button type="submit" class="btn-primary">Lanjut Pembayaran</button>
+                    <div class="form-group">
+                        <label>Informasi Rate & Potongan</label>
+                        <ul style="list-style: none; padding: 0; font-size: 13px; color: var(--text-muted);">
+                            <li style="margin-bottom: 5px;"><i class="fa-solid fa-check text-success"></i> <strong>Rp 2.000 - Rp 9.999:</strong> QRIS Instant (Admin Kecil).</li>
+                            <li><i class="fa-solid fa-check text-success"></i> <strong>Rp 10.000+:</strong> Virtual Account, E-Wallet, Retail, QRIS (Midtrans).</li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i> Lanjut Pembayaran
+                    </button>
                 </form>
             </div>
         </div>
     </main>
 </div>
+
+<script>
+    const amountInput = document.getElementById('amountInput');
+    const alertBox = document.getElementById('paymentMethodAlert');
+    const alertText = alertBox.querySelector('span');
+    const alertIcon = alertBox.querySelector('i');
+
+    amountInput.addEventListener('input', function() {
+        const val = parseInt(this.value) || 0;
+
+        if (val >= 2000 && val < 10000) {
+            alertBox.className = 'alert alert-info';
+            alertIcon.className = 'fa-solid fa-qrcode';
+            alertText.innerHTML = `Nominal <strong>Rp ${val.toLocaleString('id-ID')}</strong> menggunakan <strong>QRIS Instant (RumahOTP)</strong>.`;
+        } else if (val >= 10000) {
+            alertBox.className = 'alert alert-success';
+            alertIcon.className = 'fa-solid fa-layer-group';
+            alertText.innerHTML = `Nominal <strong>Rp ${val.toLocaleString('id-ID')}</strong> mendukung <strong>Semua Metode (VA, E-Wallet, Alfamart)</strong>.`;
+        } else {
+            alertBox.className = 'alert alert-danger';
+            alertIcon.className = 'fa-solid fa-circle-exclamation';
+            alertText.textContent = 'Minimal deposit adalah Rp 2.000';
+        }
+    });
+</script>
 
 <%- include('../partials/footer') %>

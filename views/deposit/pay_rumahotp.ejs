@@ -1,0 +1,113 @@
+<%- include('../partials/header') %>
+
+<div class="dashboard-wrapper">
+    <%- include('../partials/navbar') %>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button id="sidebarCollapse" class="hamburger"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="breadcrumb">
+                    <h2>Pembayaran QRIS</h2>
+                    <span>Scan QR Code untuk membayar</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div>
+            </div>
+        </header>
+
+        <div class="content-card" style="max-width: 500px; margin: 0 auto;">
+            <div class="card-body text-center">
+                <h3 style="margin-bottom: 5px;">Scan QRIS</h3>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">OVO / DANA / GOPAY / SHOPEEPAY / LINKAJA / BCA / BRI / DLL</p>
+
+                <div style="background: white; padding: 15px; border-radius: 10px; display: inline-block; margin-bottom: 20px;">
+                    <img src="<%= qr_image %>" style="width: 100%; max-width: 250px; display: block;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <small>Total Bayar (Termasuk Fee)</small>
+                    <h2 style="color: #34d399; font-size: 28px; margin: 0;">Rp <%= amount.toLocaleString('id-ID') %></h2>
+                </div>
+
+                <div class="alert alert-warning" style="font-size: 12px; margin-bottom: 20px;">
+                    <i class="fa-solid fa-clock"></i> Batas waktu pembayaran: <br>
+                    <strong id="countdown">--:--</strong>
+                </div>
+
+                <button onclick="checkStatus()" class="btn-primary" id="btnCheck">
+                    <i class="fa-solid fa-sync"></i> Cek Status Pembayaran
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const orderId = '<%= order_id %>';
+    const expiredTime = new Date('<%= expired %>').getTime();
+
+    // Countdown Timer
+    const timer = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = expiredTime - now;
+
+        if (distance < 0) {
+            clearInterval(timer);
+            document.getElementById('countdown').innerHTML = "EXPIRED";
+            document.getElementById('btnCheck').disabled = true;
+            document.getElementById('btnCheck').innerHTML = "Kadaluarsa";
+        } else {
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            document.getElementById('countdown').innerHTML = minutes + "m " + seconds + "s";
+        }
+    }, 1000);
+
+    // Manual Check
+    async function checkStatus() {
+        const btn = document.getElementById('btnCheck');
+        const icon = btn.querySelector('i');
+        
+        btn.disabled = true;
+        icon.classList.add('fa-spin');
+        btn.innerHTML = '<i class="fa-solid fa-sync fa-spin"></i> Mengecek...';
+
+        try {
+            const res = await fetch(`/deposit/check-status/${orderId}`, { method: 'POST' });
+            const json = await res.json();
+
+            if (json.success && json.status === 'Success') {
+                alert('Pembayaran Berhasil! Saldo telah ditambahkan.');
+                window.location.href = '/deposit/history';
+            } else if (json.status === 'Failed') {
+                alert('Pembayaran Gagal/Kadaluarsa.');
+                window.location.href = '/deposit/history';
+            } else {
+                // Masih pending
+                setTimeout(() => {
+                    btn.disabled = false;
+                    icon.classList.remove('fa-spin');
+                    btn.innerHTML = '<i class="fa-solid fa-sync"></i> Cek Status Pembayaran';
+                }, 1000);
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = 'Error Koneksi';
+        }
+    }
+
+    // Auto Check every 5 seconds
+    setInterval(async () => {
+        try {
+            const res = await fetch(`/deposit/check-status/${orderId}`, { method: 'POST' });
+            const json = await res.json();
+            if (json.success && json.status === 'Success') {
+                window.location.href = '/deposit/history';
+            }
+        } catch (e) {}
+    }, 5000);
+</script>
+
+<%- include('../partials/footer') %>

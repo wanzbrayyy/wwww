@@ -13,7 +13,7 @@
                 </div>
             </div>
             <div class="header-right">
-                <div class="balance-pill"><div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div></div>
+                <div class="balance-pill">Rp <%= (user.balance || 0).toLocaleString('id-ID') %></div>
             </div>
         </header>
 
@@ -31,20 +31,27 @@
                                 <th>Metode</th>
                                 <th>Jumlah</th>
                                 <th>Status</th>
-                                <th>Opsi</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if(deposits.length > 0) { %>
                                 <% deposits.forEach(depo => { %>
                                     <tr>
-                                        <td><%= new Date(depo.createdAt).toLocaleString('id-ID') %></td>
-                                        <td>#<%= depo.order_id %></td>
-                                        <td><%= depo.payment_type ? depo.payment_type.toUpperCase().replace('_', ' ') : '-' %></td>
+                                        <td><%= new Date(depo.createdAt).toLocaleString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) %></td>
+                                        <td style="font-family: monospace;">#<%= depo.order_id %></td>
+                                        <td>
+                                            <% if(depo.payment_type === 'qris_rumahotp') { %>
+                                                <span class="badge bg-info text-white">QRIS (RumahOTP)</span>
+                                            <% } else { %>
+                                                <%= depo.payment_type ? depo.payment_type.toUpperCase().replace('_', ' ') : 'Midtrans' %>
+                                            <% } %>
+                                        </td>
                                         <td>Rp <%= depo.amount.toLocaleString('id-ID') %></td>
                                         <td>
                                             <% 
-                                            let color = 'bg-warning text-dark';
+                                            let color = 'bg-secondary';
+                                            if(depo.status === 'Pending') color = 'bg-warning text-dark';
                                             if(depo.status === 'Success') color = 'bg-success text-white';
                                             if(depo.status === 'Failed' || depo.status === 'Expired') color = 'bg-danger text-white';
                                             %>
@@ -52,9 +59,24 @@
                                         </td>
                                         <td>
                                             <% if(depo.status === 'Pending') { %>
-                                                <button class="badge bg-info text-white border-0" onclick="payNow('<%= depo.snap_token %>')">Bayar</button>
+                                                <% if(depo.payment_type === 'qris_rumahotp') { %>
+                                                    <div style="display:flex; gap:5px;">
+                                                        <button class="badge bg-primary text-white border-0" style="cursor:pointer;" onclick="showQrModal('<%= depo.qr_code %>', '<%= depo.amount %>', '<%= depo.order_id %>')">
+                                                            <i class="fa-solid fa-qrcode"></i> QR
+                                                        </button>
+                                                        <button class="badge bg-danger text-white border-0" style="cursor:pointer;" onclick="cancelDeposit('<%= depo.order_id %>')">
+                                                            <i class="fa-solid fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                <% } else { %>
+                                                    <button class="badge bg-primary text-white border-0" style="cursor:pointer;" onclick="payNow('<%= depo.snap_token %>')">
+                                                        <i class="fa-solid fa-credit-card"></i> Bayar
+                                                    </button>
+                                                <% } %>
+                                            <% } else if (depo.status === 'Success') { %>
+                                                <i class="fa-solid fa-check-circle text-success"></i>
                                             <% } else { %>
-                                                -
+                                                <i class="fa-solid fa-xmark-circle text-danger"></i>
                                             <% } %>
                                         </td>
                                     </tr>
@@ -70,8 +92,22 @@
     </main>
 </div>
 
-<!-- Script untuk tombol Bayar di history -->
+<!-- Modal QR RumahOTP -->
+<div class="selection-modal" id="qrModal">
+    <div class="modal-content" style="max-width: 350px; text-align: center; padding: 20px;">
+        <div style="display: flex; justify-content: flex-end;">
+            <button onclick="document.getElementById('qrModal').classList.remove('active')" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <h4 style="margin-top:0;">Scan QRIS</h4>
+        <img id="modalQrImage" src="" style="width: 100%; border-radius: 10px; margin: 15px 0;">
+        <p>Total: <strong id="modalQrAmount" style="color: #34d399;"></strong></p>
+        <button onclick="location.reload()" class="btn-primary" style="margin-top: 10px;">Cek Status</button>
+    </div>
+</div>
+
+<!-- Script Midtrans -->
 <script src="https://app.midtrans.com/snap/snap.js" data-client-key="Mid-client-IoIOg2RqJNZgKpY6"></script>
+
 <script>
     function payNow(token) {
         snap.pay(token, {
@@ -79,6 +115,48 @@
             onPending: function(result){ window.location.reload(); },
             onError: function(result){ alert("Gagal"); }
         });
+    }
+
+    function showQrModal(qrCode, amount, orderId) {
+        document.getElementById('modalQrImage').src = qrCode;
+        document.getElementById('modalQrAmount').innerText = 'Rp ' + parseInt(amount).toLocaleString('id-ID');
+        document.getElementById('qrModal').classList.add('active');
+        
+        // Auto check status di background saat modal dibuka
+        checkStatusLoop(orderId);
+    }
+
+    function checkStatusLoop(orderId) {
+        if(!document.getElementById('qrModal').classList.contains('active')) return;
+        
+        fetch(`/deposit/check-status/${orderId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success && data.status === 'Success') {
+                    alert('Pembayaran Berhasil!');
+                    window.location.reload();
+                } else {
+                    setTimeout(() => checkStatusLoop(orderId), 3000);
+                }
+            })
+            .catch(e => {});
+    }
+
+    async function cancelDeposit(orderId) {
+        if(!confirm('Batalkan deposit ini?')) return;
+        
+        try {
+            const res = await fetch(`/deposit/cancel/${orderId}`, { method: 'POST' });
+            const json = await res.json();
+            if(json.success) {
+                alert('Deposit dibatalkan.');
+                window.location.reload();
+            } else {
+                alert('Gagal membatalkan.');
+            }
+        } catch(e) {
+            alert('Error server.');
+        }
     }
 </script>
 
